@@ -1,0 +1,32 @@
+-- CREATE TABLE products
+-- (
+--     id serial primary key,
+--     vendor_id int not null,
+--     vendor_sku varchar(50) not null,
+--     model varchar(255) not null,
+--     brand varchar(100) not null,
+--     warranty varchar(100) not null,
+--     description text,
+--     price numeric(10) not null default 0,
+--     rating NUMERIC(3, 2) not null default 0,
+--     estimated_delivery varchar(100),
+--     main_img varchar(255),
+--     gallery text,
+--     CONSTRAINT unique_vendor_sku UNIQUE (vendor_id, vendor_sku)
+-- )
+-- INSERT INTO products (vendor_id, vendor_sku, brand, model, price, rating, estimated_delivery, warranty, description, main_img, gallery)
+-- VALUES 
+-- (
+--     10, 
+--     '45782', 
+--     'Nivea men', 
+--     'Шампунь 500мл', 
+--     450.00, 
+--     4.1, 
+--     '9 августа', 
+--     '1 год', 
+--     'Отличный мужской шампунь для глубокого очищения.', 
+--     '/шампунь.jpg', -- Главная картинка из вашей папки public
+--     '/шампунь_2.jpg,/шампунь_3.jpg,/шампунь_4.jpg' -- Дополнительные фотки через запятую
+-- );
+-- DROP TABLE products
