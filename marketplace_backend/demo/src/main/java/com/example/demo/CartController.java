@@ -4,6 +4,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import java.util.List;
+import java.util.Optional;
 
 @RestController
 @RequestMapping("/api/cart")
@@ -16,7 +17,6 @@ public class CartController {
     @Autowired
     private ProductRepository productRepository;
 
-    // Классический плоский DTO класс с пустым конструктором и геттерами/сеттерами
     public static class CartRequest {
         private Long userId;
         private Long productId;
@@ -36,22 +36,28 @@ public class CartController {
 
     @PostMapping("/add")
     public ResponseEntity<?> addToCart(@RequestBody CartRequest request) {
-        // Логируем в консоль Spring Boot, чтобы увидеть, что прислал фронтенд
-        System.out.println("=== ПОЛУЧЕН ЗАПРОС В КОРЗИНУ ===");
-        System.out.println("userId: " + request.getUserId());
-        System.out.println("productId: " + request.getProductId());
-        System.out.println("=================================");
-
-        if (request.getUserId() == null || request.getProductId() == null) {
+        if (request.getUserId() == null || request.getProductId() == null)
+        {
             return ResponseEntity.badRequest().body("Ошибка: userId или productId пустые в запросе!");
         }
-
+        Optional<CartItem> existingItemOpt = cartRepository.findByUserIdAndProductId
+        (
+            request.getUserId(),
+            request.getProductId());
+        if (existingItemOpt.isPresent())
+        {
+            CartItem existingItem = existingItemOpt.get();
+            int newQuntity = existingItem.getQuantity() + request.getQuantity();
+            existingItem.setQuantity(newQuntity);
+            CartItem updatedItem = cartRepository.save(existingItem);
+            return ResponseEntity.ok(updatedItem);
+        }
         Product product = productRepository.findById(request.getProductId()).orElse(null);
         if (product == null) {
-            return ResponseEntity.badRequest().body("Товар с таким ID не найден в базе данных");
+            return ResponseEntity.badRequest().body("Товар с таким ID не найден");
         }
-
-        CartItem cartItem = new CartItem(request.getUserId(), product, request.getQuantity());
+        int qty = request.getQuantity() > 0 ? request.getQuantity() : 1;
+        CartItem cartItem = new CartItem(request.getUserId(), product,qty);
         CartItem savedItem = cartRepository.save(cartItem);
         
         return ResponseEntity.ok(savedItem);
@@ -61,6 +67,7 @@ public class CartController {
     public List<CartItem> getCartByUserId(@PathVariable Long userId) {
         return cartRepository.findByUserId(userId);
     }
+
 
     @DeleteMapping("/{id}")
     public void deleteFromCart(@PathVariable Long id) {

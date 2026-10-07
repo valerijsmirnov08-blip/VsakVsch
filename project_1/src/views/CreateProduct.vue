@@ -13,6 +13,7 @@ const gallery = ref('');
 const description = ref('');
 const warranty = ref('1 год');
 const estimatedDelivery = ref('9 августа');
+const quantity = ref(0);
 
 const errorMessage = ref('');
 const successMessage = ref('');
@@ -56,7 +57,7 @@ const handleGalleryDrop = (e) => {
     }
 };
 const areBothImagesLoaded = computed(() => {
-    return mainImagePreview.value !== null && galleryPreviews.value.length > 0;
+    return mainImagePreview.value !== null;
 });
 const handleCreateProduct = async() =>
 {
@@ -78,7 +79,7 @@ const handleCreateProduct = async() =>
                 JSON.stringify
                 ({
                     vendorId: currentVendorId.value,
-                    vendorSku: currentVendorId.value.trim(),
+                    vendorSku: vendorSku.value,
                     brand: brand.value.trim(),
                     model: model.value.trim(),
                     price: Number(price.value),
@@ -87,7 +88,8 @@ const handleCreateProduct = async() =>
                     warranty: warranty.value,
                     description: description.value.trim(),
                     mainImage: mainImage.value.trim() || "/Шампунь.jpg",
-                    gallery: gallery.value.trim()
+                    gallery: gallery.value.trim(),
+                    quantity: Number(quantity.value)
                 })
         });
         if(response.ok)
@@ -100,31 +102,33 @@ const handleCreateProduct = async() =>
         } else
         {
             const errText = await response.text();
-            throw new Error(errText ||"Ошибка при создании товара");
+            throw new Error(errText || "Ошибка при создании товара");
         }
     } catch(error)
     {
-        errorMessage.value = error.messege;
+        errorMessage.value = error.message;
     }
 }
 </script>
 <template>
-   <header>
+          <header>
         <nav>
             <ul>
                 <li class="name_market">Всякая всячина</li>
-                <li><a href="">Главная</a></li>
+                 <RouterLink to="/" class="accaunt-link">
+                    <li>Главная</li>
+                 </RouterLink>
                 <li><input class="search" type="text" placeholder="Поиск"></li>
                 <div class="accaunt">
-                <RouterLink to="/enter_accaunt" class="accaunt-link">
-                    <a href=""><img class="accaunt_img" src="/Аккаунт.png" alt=""></a>
-                    <li><a href="">Аккаунт</a></li>
+                <RouterLink to="/accaunt" class="accaunt-link">
+                   <img class="accaunt_img" src="/Аккаунт.png" alt="">
+                    <li>Аккаунт</li>
                 </RouterLink>
                 </div>
                 <div class="basket">
                     <RouterLink to="/basket" class="accaunt-link">
-                        <a href=""><img class="basket_img" src="/Корзина.png" alt=""></a>
-                        <li><a href="">Корзина</a></li>
+                        <img class="basket_img" src="/Корзина.png" alt="">
+                        <li>Корзина</li>
                     </RouterLink>
                 </div>
                 
@@ -155,6 +159,10 @@ const handleCreateProduct = async() =>
             <label>Цена товара</label>
             <input v-model="price" type="number" placeholder="Цена">
         </div>
+        <div class="form_group">
+            <label>Количество на складе</label>
+            <input v-model.number="quantity" type="number" placeholder="Цена">
+        </div>
          <div class="form_group">
             <label>Главное изображение товара *</label>
             <div 
@@ -164,10 +172,9 @@ const handleCreateProduct = async() =>
                 @dragenter.prevent="isMainDragover = true"
                 @dragleave.prevent="isMainDragover = false"
                 @drop.prevent="handleMainImageDrop">
-                <div v-if="!areBothImagesLoaded" class="drop_zone_content">
+                <div v-if="!mainImagePreview" class="drop_zone_content">
                     <img src="/Корзина.png" class="upload_icon" alt="">
                     <p v-if="!mainImagePreview">Перетащите сюда главное фото</p>
-                    <p v-else style="color: #4caf50; font-weight: 600;">Главное фото готово (ожидаем галерею)</p>
                 </div>
                 <div v-else class="preview_container">
                     <img :src="mainImagePreview" class="main_image_preview" alt="">
@@ -186,7 +193,7 @@ const handleCreateProduct = async() =>
                 @dragenter.prevent="isGalleryDragover = true"
                 @dragleave.prevent="isGalleryDragover = false"
                 @drop.prevent="handleGalleryDrop">
-                <div v-if="!areBothImagesLoaded" class="drop_zone_content">
+                <div v-if="galleryPreviews.length === 0" class="drop_zone_content">
                     <img src="/Корзина.png" class="upload_icon" alt="">
                     <p v-if="galleryPreviews.length === 0">Перетащите сюда файлы галереи (выделите мышкой несколько)</p>
                     <p v-else style="color: #4caf50; font-weight: 600;">✓ Загружено фото для галереи: {{ galleryPreviews.length }} шт. (ожидаем главное фото)</p>
@@ -206,7 +213,7 @@ const handleCreateProduct = async() =>
         <p v-if="errorMessage" class="msg error">{{ errorMessage }}</p>
         <p v-if="successMessage" class="msg success">{{ successMessage }}</p>
             
-         <button type="submit" class="btn_submit_product">Выставить на витрину</button>
+         <button type="submit" :disabled="!areBothImagesLoaded" class="btn_submit_product">Выставить на витрину</button>
     </form>
      </div>
     

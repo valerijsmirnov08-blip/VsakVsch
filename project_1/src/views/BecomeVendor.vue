@@ -51,8 +51,10 @@ const handleCreateShop = async () =>
             throw new Error (errorData.messege  || "Ошибука ввода данных, повтарите попытку позже");
         }
         const updateUser = await response.json();
+        userDate.value = updateUser;
         localStorage.setItem('user_session', JSON.stringify(updateUser));
-        alert(`Поздравляем ваш магазин "${updateUser.shopName}" успешно создан`);
+        // console.log(shopName.value);
+        alert(`Поздравляем ваш магазин '${shopName.value}' успешно создан`);
         router.push('/accaunt');
     }
     catch (error)
@@ -69,18 +71,20 @@ const handleCreateShop = async () =>
         <nav>
             <ul>
                 <li class="name_market">Всякая всячина</li>
-                <li><a href="">Главная</a></li>
+                 <RouterLink to="/" class="accaunt-link">
+                    <li>Главная</li>
+                 </RouterLink>
                 <li><input class="search" type="text" placeholder="Поиск"></li>
                 <div class="accaunt">
-                <RouterLink to="/enter_accaunt" class="accaunt-link">
-                    <a href=""><img class="accaunt_img" src="/Аккаунт.png" alt=""></a>
-                    <li><a href="">Аккаунт</a></li>
+                <RouterLink to="/accaunt" class="accaunt-link">
+                   <img class="accaunt_img" src="/Аккаунт.png" alt="">
+                    <li>Аккаунт</li>
                 </RouterLink>
                 </div>
                 <div class="basket">
                     <RouterLink to="/basket" class="accaunt-link">
-                        <a href=""><img class="basket_img" src="/Корзина.png" alt=""></a>
-                        <li><a href="">Корзина</a></li>
+                        <img class="basket_img" src="/Корзина.png" alt="">
+                        <li>Корзина</li>
                     </RouterLink>
                 </div>
                 

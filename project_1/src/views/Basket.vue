@@ -1,6 +1,8 @@
 <script setup>
+import router from '@/router';
 import {ref, onMounted, computed} from 'vue';
 import { RouterLink } from 'vue-router';
+import { parse } from 'vue/compiler-sfc';
 
 const cartItems = ref([]);
 const loading = ref(true);
@@ -50,7 +52,7 @@ const deleteItem = async (cartItemId) =>
         if (response.ok) {
             cartItems.value = cartItems.value.filter(item => item.id !== cartItemId);
         } else {
-                System.err.println('Не удалось удалить товар')
+                console.error('Не удалось удалить товар')
             } 
     }
     catch (error)
@@ -58,6 +60,115 @@ const deleteItem = async (cartItemId) =>
             console.error('Ошибка при удалении', error)
         }
 };
+const Plus = async (productId) =>
+{
+    const session = localStorage.getItem('user_session');
+    if(!session)
+    {
+        alert("Войдите в аккаунт");
+        return
+    }
+
+    try
+    {
+        const user = JSON.parse(session);
+        const response = await fetch(`http://localhost:8080/api/cart/add`,
+        {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify
+            ({
+                userId: Number(user.id),
+                productId: Number(productId),
+                quantity: 1
+            })
+            
+        });
+        if(response.ok)
+        {
+            const fountItem = cartItems.value.find(item => item.product.id === productId);
+            if(fountItem)
+            {
+                fountItem.quantity ++;
+            }
+        }
+        }
+        catch(error)
+        {
+            console.error("Ошибка прибавления товара")
+        }
+}
+const Minus =  async(productId) =>
+{
+    const session = localStorage.getItem('user_session')
+    if(!session)
+    {
+        alert("Пожалуйста войдите в аккаунт")
+        
+    }
+    
+    try
+    {
+        const user = JSON.parse(session);
+        const response = await fetch(`http://localhost:8080/api/cart/add`,
+            {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify
+                ({
+                    userId: Number(user.id),
+                    productId: Number(productId),
+                    quantity: -1
+                })
+            });
+            if(response.ok)
+            {
+                const fountItem = cartItems.value.find(item => item.product.id === productId);
+                if(fountItem)
+                {
+                    if(fountItem.quantity === 1)
+                    {
+                        deleteItem(fountItem.id)
+                        
+                    }
+                    fountItem.quantity --;
+                }
+            }
+            
+    }
+    catch(error)
+    {
+        console.error("Ошибка удаления")
+    }
+    
+}
+const Pay = async(productId) =>
+{
+    const session = localStorage.getItem('user_session');
+    if(!session)
+    {   
+        alert("Пожалуйста войдите в аккаунт");
+    }
+    try
+    {
+        const user = JSON.parse(session);
+        const response = await fetch(`http://localhost:8080/api/cart/add`,
+        {
+            method: 'POST',
+            header: {'Conten-Type': 'application/json'},
+            body: JSON.stringify
+            ({
+                userId: Number(user.id),
+                productId: Number(product.id),
+                
+            })
+        });
+    }
+    catch(error)
+    {
+
+    }
+}
 onMounted(() =>
 {
     loadCart();
@@ -65,25 +176,24 @@ onMounted(() =>
 
 </script>
 <template>
-    <header>
+          <header>
         <nav>
             <ul>
                 <li class="name_market">Всякая всячина</li>
-                <RouterLink to="/" class="accaunt-link">
-                    <li><a href="">Главная</a></li>
-                </RouterLink>
-                
+                 <RouterLink to="/" class="accaunt-link">
+                    <li>Главная</li>
+                 </RouterLink>
                 <li><input class="search" type="text" placeholder="Поиск"></li>
                 <div class="accaunt">
-                <RouterLink to="/enter_accaunt" class="accaunt-link">
-                    <a href=""><img class="accaunt_img" src="/Аккаунт.png" alt=""></a>
-                    <li><a href="">Аккаунт</a></li>
+                <RouterLink to="/accaunt" class="accaunt-link">
+                   <img class="accaunt_img" src="/Аккаунт.png" alt="">
+                    <li>Аккаунт</li>
                 </RouterLink>
                 </div>
                 <div class="basket">
                     <RouterLink to="/basket" class="accaunt-link">
-                        <a href=""><img class="basket_img" src="/Корзина.png" alt=""></a>
-                        <li><a href="">Корзина</a></li>
+                        <img class="basket_img" src="/Корзина.png" alt="">
+                        <li>Корзина</li>
                     </RouterLink>
                 </div>
                 
@@ -121,7 +231,9 @@ onMounted(() =>
                     <p class="item_sku">Артикул: {{ item.product.vendorSku }}</p>
                 </div>
                 <div class="item_price_zone">
-                    <p class="item_price_text">{{ item.product.prise }} ₽</p>
+                    <button @click="Plus(item.product.id)" class="item_dop_plus">+</button>
+                    <button @click="Minus(item.product.id)" class="item_dop_plus">-</button>
+                    <p class="item_price_text">{{ item.product.price }} ₽</p>
                     <p class="item_quantity_text">{{ item.quantity }} шт.</p>
                 </div>
                 <button @click="deleteItem(item.id)" class="btn_remove_item">Удалить</button>

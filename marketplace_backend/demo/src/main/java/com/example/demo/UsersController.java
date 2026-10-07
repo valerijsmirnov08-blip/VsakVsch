@@ -30,7 +30,6 @@ public class UsersController
         .findFirst();
         if(userOpt.isPresent())
         {
-            
             Users user = userOpt.get();
             
             if(user.getPassword() != null && user.getPassword().equals(password.trim()))
@@ -72,7 +71,8 @@ public class UsersController
 
         if (name == null || name.trim().isEmpty() || 
             email == null || email.trim().isEmpty() || 
-            password == null || password.trim().isEmpty()) {
+            password == null || password.trim().isEmpty())
+        {
             return ResponseEntity.badRequest().body("{\"message\": \"Все поля обязательны для заполнения!\"}");
         }
         Optional<Users> existingUser = usersRepository.findAll().stream()

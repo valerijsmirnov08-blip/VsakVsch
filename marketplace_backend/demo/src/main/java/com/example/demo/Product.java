@@ -12,7 +12,7 @@ public class Product
     private Long id;
     
     @Column(name = "vendor_id", nullable = false)
-    private Integer vendorId;
+    private Long vendorId;
 
     @Column(name = "vendor_sku", nullable = false)
     private String vendorSku;
@@ -36,11 +36,16 @@ public class Product
     @Column (columnDefinition = "TEXT")
     private String gallery;
 
+    @Column (nullable = false)
+    private int quantity;
+
+    private String status;
+
     public Long getId() {return id;}
     public void setId(Long id) {this.id = id;}
     
-    public Integer getVendorId() {return vendorId;}
-    public void setVendorId(Integer vendorId) {this.vendorId = vendorId;}
+    public Long getVendorId() {return vendorId;}
+    public void setVendorId(Long vendorId) {this.vendorId = vendorId;}
     
     public String getVendorSku() {return vendorSku;}
     public void setVendorSku(String vendorSku) {this.vendorSku = vendorSku;}
@@ -72,4 +77,9 @@ public class Product
     public String getGallery() {return gallery;}
     public void setGallery(String gallery) {this.gallery = gallery;}
 
+    public int getQuantity() {return quantity;}
+    public void setQuantity(int quantity) {this.quantity = quantity;}
+
+    public String getStatus() {return status;}
+    public void setStatus(String status) {this.status = status;}
 }

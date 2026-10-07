@@ -24,32 +24,44 @@
     {
         localStorage.removeItem('user_session');
         userDate.value = null;
-        router.push('/')
+        router.push('/enter_accaunt')
     };
+    // const isVendor = (() =>
+    // {
+    //     const session = localStorage.getItem('user_session')
+    //     if(session)
+    //     {
+    //         userDate.value = JSON.parse(session);
+    //     }
+    //     else
+    //     {
+    //         router.push('/enter_accaunt');
+    //     }
+    //     if(userDate.is_vendor)
+    //     {
 
-    const mainPhoto = ref('/Шампунь.jpg')
-    function changePhoto(newSrc)
-    {
-        mainPhoto.value = newSrc
-    }
+    //     }
+    // }) 
     </script>
 <template>
-  <header>
+        <header>
         <nav>
             <ul>
                 <li class="name_market">Всякая всячина</li>
-                <li><a href="">Главная</a></li>
+                 <RouterLink to="/" class="accaunt-link">
+                    <li>Главная</li>
+                 </RouterLink>
                 <li><input class="search" type="text" placeholder="Поиск"></li>
                 <div class="accaunt">
-                <RouterLink to="/enter_accaunt" class="accaunt-link">
-                    <a href=""><img class="accaunt_img" src="/Аккаунт.png" alt=""></a>
-                    <li><a href="">Аккаунт</a></li>
+                <RouterLink to="/accaunt" class="accaunt-link">
+                   <img class="accaunt_img" src="/Аккаунт.png" alt="">
+                    <li>Аккаунт</li>
                 </RouterLink>
                 </div>
                 <div class="basket">
                     <RouterLink to="/basket" class="accaunt-link">
-                        <a href=""><img class="basket_img" src="/Корзина.png" alt=""></a>
-                        <li><a href="">Корзина</a></li>
+                        <img class="basket_img" src="/Корзина.png" alt="">
+                        <li>Корзина</li>
                     </RouterLink>
                 </div>
                 
@@ -73,9 +85,21 @@
                 <img src="/Коробка_доставка.png" alt="">
                 <a href="">Доставка</a>
             </div>
-            <div class="profil_links">
+            <div v-if="!userDate.isVendor" class="profil_links">
                 <img src="/Продавец_ЧБ.png" alt="">
-                <a href="http://localhost:5173/vendor_b">Стать продавцом</a>
+                <RouterLink to="/vendor_b">Стать продавцом</RouterLink>
+            </div>
+            <div v-if="userDate.isVendor" class="profil_links">
+                <img src="/ЗаказыПродавец_ЧБ.png" alt="">
+                <RouterLink to="/vendor_o">Заказы</RouterLink>
+            </div>
+            <div v-if="userDate.isVendor" class="profil_links">
+                <img src="/СтатистикаПродавец_ЧБ.png" alt="">
+                <RouterLink to="/vendor_s">Статистика</RouterLink>
+            </div>
+            <div v-if="userDate.isVendor" class="profil_links">
+                <img src="/Склад_Продавец_ЧБ.png" alt="">
+                <RouterLink to="/vendor_w">Склад</RouterLink>
             </div>
             <div class="profil_links">
                 <img src="/Работа.png" alt="">
@@ -85,10 +109,7 @@
                 <img src="/Поддержка.png" alt="">
                 <a href="">Поддержка</a>
             </div>
-            <RouterLink to="/enter_accaunt">
                 <button @click="handleLogout">Выйти</button>
-            </RouterLink>
-            
         </div>
        
     </div>

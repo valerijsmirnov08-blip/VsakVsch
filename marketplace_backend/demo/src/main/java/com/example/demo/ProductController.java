@@ -37,6 +37,11 @@ public class ProductController
         Product saveProduct = productRepository.save(newProduct);
         return ResponseEntity.ok(saveProduct);
     }
+    @GetMapping ("/vendor/{vendorId}")
+    public List<Product> findByVendorId(@PathVariable Long vendorId)
+    {
+        return productRepository.findByVendorId(vendorId);
+    }
 }
 
 
