@@ -67,30 +67,6 @@ const handleCreateShop = async () =>
 </script>
 
 <template>
-    <header>
-        <nav>
-            <ul>
-                <li class="name_market">Всякая всячина</li>
-                 <RouterLink to="/" class="accaunt-link">
-                    <li>Главная</li>
-                 </RouterLink>
-                <li><input class="search" type="text" placeholder="Поиск"></li>
-                <div class="accaunt">
-                <RouterLink to="/accaunt" class="accaunt-link">
-                   <img class="accaunt_img" src="/Аккаунт.png" alt="">
-                    <li>Аккаунт</li>
-                </RouterLink>
-                </div>
-                <div class="basket">
-                    <RouterLink to="/basket" class="accaunt-link">
-                        <img class="basket_img" src="/Корзина.png" alt="">
-                        <li>Корзина</li>
-                    </RouterLink>
-                </div>
-                
-            </ul>
-        </nav>
-    </header>
     <button @click="router.push('/accaunt')" class="back"><img src="/Назад.png" alt=""></button>
     <div class="become_vendor_main">
             <h1>Создание своего собственного магазина</h1>
@@ -108,27 +84,92 @@ const handleCreateShop = async () =>
                 <button type="submit" class="create_vendor">Создать</button>
             </form>
     </div>
-    <div class="bottom">
-        <div class="column_bottom">
-            <p class="column_title">Для покупателей</p>
-            <a href="">Частые вопросы</a>
-            <a href="">Доставка</a>
-            <a href="">Страховка товара</a>
-            <a href=""><img src="/Вацап_ЧБ.png" alt=""></a>
-        </div>
-        <div class="column_bottom">
-            <p class="column_title">Для продавцов</p>
-            <a href="">Продажа товара</a>
-            <a href="">Открытие своего пунтка выдачи</a>
-            <a href="">Доставка заказов</a>
-            <a href=""><img src="/ТГ_Чб.png" alt=""></a>
-        </div>
-        <div class="column_bottom">
-            <p class="column_title">Наша компания</p>
-            <a href="">О нас</a>
-            <a href="">Контакты</a>
-            <a href="">Поддержка</a>
-            <a href=""><img src="/Макс_ЧБ.png" alt=""></a>
-        </div>
-    </div>
 </template>
+
+<style scoped>
+.become_vendor_main
+{
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    text-align: center;
+    align-items: center;
+    gap: 30px;
+}
+.input_vendor_info
+{
+    width: 100%;
+    height: 56px;
+    border-radius: 40px;
+    border: 1px solid #f0edf0;
+    background: #fcfbfc;
+    padding: 0 20px;
+    box-sizing: border-box;
+    font-size: 16px;
+    outline: none;
+    transition: all 0.2s ease;
+}
+.input_vendor_info:focus
+{
+   border-color: #ff7e5f;
+   background-color: #ffff;
+   box-shadow: 0 0 0 4px rgba(255, 126, 95, 0.1);
+}
+.input_vendor_info::placeholder
+{
+    text-align: center;
+    color: #9c9a9c;
+    font-size: 16px;
+}
+.preface_become_vendor
+{
+    hyphens: auto;
+}
+.agreement_vendor
+{
+    margin-top: 25px;
+    max-width: 450px;
+    font-family: 'Lucida Sans';
+    border-bottom: 1px solid #eaeaea;
+    padding-bottom: 10px;
+}
+.agreement_vendor summary
+{
+    font-size: 18px;
+    font-weight: 700;
+    color: #000000;
+    cursor: pointer;
+    list-style: none;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    user-select: none;
+}
+.vendor_agreement
+{
+    margin-top: 12px;
+    font-size: 15px;
+    line-height: 1.6;
+    color: #3a3a3a;
+    animation: In 0.3s ease-out;
+}
+.create_vendor
+{
+    width: 100%;
+    height: 50px;
+    border-radius: 40px;
+    border: none;
+    background: linear-gradient(to right, #ff7e5f, #feb47b);
+    color: #ffff;
+    font-size: 18px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: opacity 0.2s;
+    box-shadow: 0 4px 10px rgba(255, 126, 95, 0.2);
+}
+.create_vendor:hover
+{
+    opacity: 0.9;
+}
+
+</style>

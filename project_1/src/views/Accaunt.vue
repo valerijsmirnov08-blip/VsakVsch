@@ -26,49 +26,8 @@
         userDate.value = null;
         router.push('/enter_accaunt')
     };
-    // const isVendor = (() =>
-    // {
-    //     const session = localStorage.getItem('user_session')
-    //     if(session)
-    //     {
-    //         userDate.value = JSON.parse(session);
-    //     }
-    //     else
-    //     {
-    //         router.push('/enter_accaunt');
-    //     }
-    //     if(userDate.is_vendor)
-    //     {
-
-    //     }
-    // }) 
     </script>
-<template>
-        <header>
-        <nav>
-            <ul>
-                <li class="name_market">Всякая всячина</li>
-                 <RouterLink to="/" class="accaunt-link">
-                    <li>Главная</li>
-                 </RouterLink>
-                <li><input class="search" type="text" placeholder="Поиск"></li>
-                <div class="accaunt">
-                <RouterLink to="/accaunt" class="accaunt-link">
-                   <img class="accaunt_img" src="/Аккаунт.png" alt="">
-                    <li>Аккаунт</li>
-                </RouterLink>
-                </div>
-                <div class="basket">
-                    <RouterLink to="/basket" class="accaunt-link">
-                        <img class="basket_img" src="/Корзина.png" alt="">
-                        <li>Корзина</li>
-                    </RouterLink>
-                </div>
-                
-            </ul>
-        </nav>
-    </header>
-    
+<template>   
     <div v-if="userDate" class="main_Accaunt">
         <h1>Здравствуйте, {{ userDate.userName }}!</h1>
         <div class="profil_container">
@@ -113,27 +72,105 @@
         </div>
        
     </div>
-    <div class="bottom">
-        <div class="column_bottom">
-            <p class="column_title">Для покупателей</p>
-            <a href="">Частые вопросы</a>
-            <a href="">Доставка</a>
-            <a href="">Страховка товара</a>
-            <a href=""><img src="/Вацап_ЧБ.png" alt=""></a>
-        </div>
-        <div class="column_bottom">
-            <p class="column_title">Для продавцов</p>
-            <a href="">Продажа товара</a>
-            <a href="">Открытие своего пунтка выдачи</a>
-            <a href="">Доставка заказов</a>
-            <a href=""><img src="/ТГ_Чб.png" alt=""></a>
-        </div>
-        <div class="column_bottom">
-            <p class="column_title">Наша компания</p>
-            <a href="">О нас</a>
-            <a href="">Контакты</a>
-            <a href="">Поддержка</a>
-            <a href=""><img src="/Макс_ЧБ.png" alt=""></a>
-        </div>
-    </div>
 </template>
+
+<style scoped>
+.main_Accaunt
+{
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    gap: 50px;
+    padding: 20px;
+    background-color: #fdfbf9;
+    min-height: 70vh;
+    font-family: system-ui, -apple-system, sans-serif;  
+}
+.profil_container
+{
+    display: flex;
+    flex-direction: column;
+    gap: 30px;
+    width: 400px;
+    flex-shrink: 0;
+    margin: 0 auto;
+}
+.profil_container img
+{
+    width: 70px;
+    margin-left: 10px;
+}
+.profil_links
+{
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    gap: 0 20px;
+    text-align: center;
+    font-size: 18px;
+    border-radius: 30px;
+    background-color: rgba(254, 180, 123, 0.8);
+}
+.profil_links:hover
+{
+    background-color: #f0ebf4;
+    cursor: pointer;
+}
+.profil_links a
+{
+    text-decoration: none;
+    color: #000000;
+    display: inline-block;
+    max-width: 100%;
+    word-break: break-word;
+}
+.accaunt_work
+{
+    text-align: center;
+}
+.profile_content
+{
+    flex: 1;
+    background-color: #ffffff;
+    border: 1px solid #f2edf0;
+    border-radius: 20px;
+    padding: 40px;
+    min-height: 380px;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.02);
+    box-sizing: border-box;
+}
+
+.profile_content h2
+{
+    margin-top: 0;
+    color: #222222;
+    font-size: 24px;
+}
+
+.profile_content p
+{
+    color: #666666;
+    line-height: 1.6;
+}
+.profil_container button
+{
+    width: 100%;
+    height: 50px;
+    border-radius: 40px;
+    border: none;
+    background: linear-gradient(to right, #ff7e5f, #feb47b);
+    color: #ffff;
+    font-size: 18px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: opacity 0.2s;
+    box-shadow: 0 4px 10px rgba(255, 126, 95, 0.2);
+}
+
+.profil_container button:hover
+{
+    background-color: #ffebeb;
+    border-color: #ffcccc;
+}
+</style>

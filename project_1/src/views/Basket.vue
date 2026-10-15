@@ -2,7 +2,7 @@
 import router from '@/router';
 import {ref, onMounted, computed} from 'vue';
 import { RouterLink } from 'vue-router';
-import { parse } from 'vue/compiler-sfc';
+import { errorMessages, parse } from 'vue/compiler-sfc';
 
 const cartItems = ref([]);
 const loading = ref(true);
@@ -142,31 +142,37 @@ const Minus =  async(productId) =>
     }
     
 }
-const Pay = async(productId) =>
+const Pay = async() =>
 {
     const session = localStorage.getItem('user_session');
     if(!session)
     {   
         alert("Пожалуйста войдите в аккаунт");
+        return;
     }
     try
     {
         const user = JSON.parse(session);
-        const response = await fetch(`http://localhost:8080/api/cart/add`,
+        const response = await fetch(`http://localhost:8080/api/orders/checkout/${user.id}`,
         {
-            method: 'POST',
-            header: {'Conten-Type': 'application/json'},
-            body: JSON.stringify
-            ({
-                userId: Number(user.id),
-                productId: Number(product.id),
-                
-            })
+            method: 'POST'
         });
+        if(response.ok)
+        {
+            cartItems.value = [];
+            alert("Заказ успешно оформлен!");
+        }
+        else
+        {
+            const errorMessage = await response.text();
+            alert("Ошибка: " + errorMessage);
+        }
+        
     }
     catch(error)
     {
-
+        console.error("Ошибка при оформлении заказа:", error);
+        alert("Не удалось связаться с сервером");
     }
 }
 onMounted(() =>
@@ -176,30 +182,6 @@ onMounted(() =>
 
 </script>
 <template>
-          <header>
-        <nav>
-            <ul>
-                <li class="name_market">Всякая всячина</li>
-                 <RouterLink to="/" class="accaunt-link">
-                    <li>Главная</li>
-                 </RouterLink>
-                <li><input class="search" type="text" placeholder="Поиск"></li>
-                <div class="accaunt">
-                <RouterLink to="/accaunt" class="accaunt-link">
-                   <img class="accaunt_img" src="/Аккаунт.png" alt="">
-                    <li>Аккаунт</li>
-                </RouterLink>
-                </div>
-                <div class="basket">
-                    <RouterLink to="/basket" class="accaunt-link">
-                        <img class="basket_img" src="/Корзина.png" alt="">
-                        <li>Корзина</li>
-                    </RouterLink>
-                </div>
-                
-            </ul>
-        </nav>
-    </header>
     <div class="main_basket">
 
     <RouterLink to="/" class="link">
@@ -223,7 +205,7 @@ onMounted(() =>
             <RouterLink to="/" class="link_go_shop">За покупками </RouterLink>
         </div>
         <div v-else class="cart_items_list">
-            <div v-for="item in cartItems" :key="item.id" class="dinamic_cart_item">
+            <div v-for="item in cartItems" :key="item.id" class="dynamic_cart_item">
                 <img :src="item.product.mainImage" :alt="item.product.model" class="item_img" />
                 <div class="item_details">
                     <span class="item_brand">{{ item.product.brand }}</span>
@@ -241,33 +223,189 @@ onMounted(() =>
         </div>
         <div class="pay_basket">
             <p class="prise_basket">К оплате: <span>{{totalCost}} ₽</span></p>
-            <button class="buy_busket" :disabled= "cartItems.length === 0">Оплатить</button>
+            <button @click="Pay" class="buy_busket" :disabled= "cartItems.length === 0">Оплатить</button>
         </div>
     
    </div>
-   <div class="bottom">
-        <div class="column_bottom">
-            <p class="column_title">Для покупателей</p>
-            <a href="">Частые вопросы</a>
-            <a href="">Доставка</a>
-            <a href="">Страховка товара</a>
-            <a href=""><img src="/Вацап_ЧБ.png" alt=""></a>
-        </div>
-        <div class="column_bottom">
-            <p class="column_title">Для продавцов</p>
-            <a href="">Продажа товара</a>
-            <a href="">Открытие своего пунтка выдачи</a>
-            <a href="">Доставка заказов</a>
-            <a href=""><img src="/ТГ_Чб.png" alt=""></a>
-        </div>
-        <div class="column_bottom">
-            <p class="column_title">Наша компания</p>
-            <a href="">О нас</a>
-            <a href="">Контакты</a>
-            <a href="">Поддержка</a>
-            <a href=""><img src="/Макс_ЧБ.png" alt=""></a>
-        </div>
-    </div>
     </div>
     
 </template>
+
+<style scoped>
+.main_basket {
+    padding: 50px 30px;
+    font-family: system-ui, -apple-system, sans-serif;
+}
+.main_basket h1 {
+    font-size: 32px;
+    margin-top: 20px;
+    font-weight: 700;
+}
+.back_accaunt_in_basket img {
+    width: 24px;
+}
+.back_accaunt_in_basket {
+    background: none;
+    border: none;
+    cursor: pointer;
+    opacity: 0.6;
+    transition: opacity 0.2s;
+}
+.back_accaunt_in_basket:hover {
+    opacity: 1;
+}
+.Basket {
+    padding: 30px 0 80px 0;
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 40px;
+}
+.elements_basket {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+    flex-grow: 1;
+}
+.elements_basket h2 {
+    font-size: 24px;
+    color: #222;
+    margin: 0;
+}
+.empty_basket_view {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+}
+.go_shop {
+    width: 80px;
+    height: 80px;
+    opacity: 0.8;
+}
+.pay_basket {
+    display: flex;
+    flex-direction: column;
+    width: 100%;
+    max-width: 360px;
+    align-items: center;
+    gap: 24px;
+    box-sizing: border-box;
+    background-color: #ffff;
+    border-radius: 20px;
+    padding: 35px;
+    box-shadow: 0 10px 25px rgba(0,0,0, 0.04);
+    border: 1px solid #f2edf0;
+    flex-shrink: 0;
+}
+.prise_basket {
+    font-size: 26px;
+    font-weight: 500;
+    color: #333;
+    margin: 0;
+    font-family: 'Franklin Gothic Medium', 'Arial Narrow', Arial, sans-serif;
+}
+.prise_basket span {
+    color: #b82e0c;
+    font-weight: 700;
+}
+.buy_busket {
+    width: 100%;
+    height: 52px;
+    border-radius: 40px;
+    border: none;
+    background: linear-gradient(to right, #ff7e5f, #feb47b);
+    color: #ffff;
+    font-size: 18px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    box-shadow: 0 4px 10px rgba(255, 126, 95, 0.2);
+}
+.buy_busket:disabled {
+    background: #e0dce0;
+    color: #666;
+    box-shadow: none;
+    cursor: not-allowed;
+    opacity: 0.7;
+}
+.link_go_shop {
+    color: #b82e0c;
+    text-decoration: underline;
+    font-size: 20px;
+    font-weight: 600;
+}
+
+.cart_items_list {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+    width: 100%;
+}
+.dynamic_cart_item {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    background: #ffffff;
+    border: 1px solid #f2edf0;
+    padding: 20px;
+    border-radius: 16px;
+    box-shadow: 0 4px 12px rgba(0,0,0, 0.02);
+}
+.item_img {
+    width: 80px;
+    height: 80px;
+    object-fit: contain;
+}
+.item_details {
+    flex-grow: 1;
+    padding-left: 20px;
+}
+.item_brand {
+    font-size: 12px;
+    color: #888;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+}
+.item_model {
+    margin: 4px 0;
+    font-size: 18px;
+    color: #222;
+}
+.item_sku {
+    font-size: 12px;
+    color: #666;
+    margin: 0;
+}
+.item_price_zone {
+    text-align: right;
+    padding-right: 30px;
+}
+.item_price_text {
+    font-size: 20px;
+    font-weight: 700;
+    color: #333;
+    margin: 0;
+}
+.item_quantity_text {
+    font-size: 14px;
+    color: #888;
+    margin: 4px 0 0 0;
+}
+.btn_remove_item {
+    background: none;
+    border: 1px solid #ff7e5f;
+    color: #ff7e5f;
+    padding: 8px 16px;
+    border-radius: 20px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+.btn_remove_item:hover {
+    background: #ff7e5f;
+    color: #fff;
+}
+.loading_text {
+    color: #666;
+}
+</style>

@@ -111,30 +111,6 @@ const handleCreateProduct = async() =>
 }
 </script>
 <template>
-          <header>
-        <nav>
-            <ul>
-                <li class="name_market">Всякая всячина</li>
-                 <RouterLink to="/" class="accaunt-link">
-                    <li>Главная</li>
-                 </RouterLink>
-                <li><input class="search" type="text" placeholder="Поиск"></li>
-                <div class="accaunt">
-                <RouterLink to="/accaunt" class="accaunt-link">
-                   <img class="accaunt_img" src="/Аккаунт.png" alt="">
-                    <li>Аккаунт</li>
-                </RouterLink>
-                </div>
-                <div class="basket">
-                    <RouterLink to="/basket" class="accaunt-link">
-                        <img class="basket_img" src="/Корзина.png" alt="">
-                        <li>Корзина</li>
-                    </RouterLink>
-                </div>
-                
-            </ul>
-        </nav>
-    </header>
      <div class="form-page-container">
         <div class="main_create_product">
         <RouterLink to="/accaunt" class="link">
@@ -219,3 +195,77 @@ const handleCreateProduct = async() =>
     
 
 </template>
+
+<style scoped>
+.form-page-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    min-height: 80vh;
+    padding: 40px 20px;
+    font-family: system-ui, -apple-system, sans-serif;
+}
+.main_create_product {
+    font-family: system-ui, -apple-system, sans-serif;
+    width: 100%;
+    max-width: 550px; /* Ограничиваем ширину для идеального центрирования */
+    display: flex;
+    flex-direction: column;
+    align-items: center; /* Центрируем заголовок и кнопку назад внутри контейнера */
+}
+h1 {
+    font-size: 28px;
+    margin: 20px 0;
+}
+.product_form {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+    background: #fff;
+    padding: 30px;
+    border-radius: 20px;
+    box-shadow: 0 10px 25px rgba(0,0,0,0.04);
+    border: 1px solid #f2edf0;
+}
+.form_group {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+.form_group label {
+    font-weight: 600;
+    color: #333;
+}
+.form_group input, .form_group textarea {
+    padding: 12px;
+    border-radius: 8px;
+    border: 1px solid #ccc;
+    font-size: 16px;
+}
+.form_group textarea {
+    height: 100px;
+    resize: vertical;
+}
+.btn_submit_product {
+    height: 50px;
+    border-radius: 40px;
+    border: none;
+    background: linear-gradient(to right, #4caf50, #81c784);
+    color: #fff;
+    font-size: 18px;
+    font-weight: 600;
+    cursor: pointer;
+    margin-top: 10px;
+}
+.msg {
+    text-align: center;
+    font-weight: 600;
+}
+.error { color: red; }
+.success { color: green; }
+.back_btn img { width: 24px; }
+.back_btn { background: none; border: none; cursor: pointer; }
+.back_btn {margin-top: 20px;}
+
+</style>

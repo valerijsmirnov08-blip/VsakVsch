@@ -73,27 +73,32 @@ const handleRegister = async () => {
         <button type="button" class="back_accaunt"><img src="/Назад.png" alt=""></button>
       </RouterLink>
    </div>
-   <div class="bottom">
-        <div class="column_bottom">
-            <p class="column_title">Для покупателей</p>
-            <a href="">Частые вопросы</a>
-            <a href="">Доставка</a>
-            <a href="">Страховка товара</a>
-            <a href=""><img src="/Вацап_ЧБ.png" alt=""></a>
-        </div>
-        <div class="column_bottom">
-            <p class="column_title">Для продавцов</p>
-            <a href="">Продажа товара</a>
-            <a href="">Открытие своего пунтка выдачи</a>
-            <a href="">Доставка заказов</a>
-            <a href=""><img src="/ТГ_Чб.png" alt=""></a>
-        </div>
-        <div class="column_bottom">
-            <p class="column_title">Наша company</p>
-            <a href="">О нас</a>
-            <a href="">Контакты</a>
-            <a href="">Поддержка</a>
-            <a href=""><img src="/Макс_ЧБ.png" alt=""></a>
-        </div>
-    </div>
 </template>
+
+<style scoped>
+.input_name
+{
+    width: 100%;
+    height: 56px;
+    border-radius: 40px;
+    border: 1px solid #f0edf0;
+    background: #fcfbfc;
+    padding: 0 20px;
+    box-sizing: border-box;
+    font-size: 16px;
+    outline: none;
+    transition: all 0.2s ease;
+}
+.input_name:focus
+{
+   border-color: #ff7e5f;
+   background-color: #ffff;
+   box-shadow: 0 0 0 4px rgba(255, 126, 95, 0.1);
+}
+.input_name::placeholder
+{
+    text-align: center;
+    color: #9c9a9c;
+    font-size: 16px;
+}
+</style>

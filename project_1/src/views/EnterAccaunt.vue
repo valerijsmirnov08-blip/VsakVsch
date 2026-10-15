@@ -55,7 +55,7 @@ const handleLogin = async () =>
 
 }
 </script>
-<template class="main_accaunt">
+<template>
    <div class="main_accaunt">
     <h1>Вход в Аккаунт</h1>
     <form @submit.prevent = "handleLogin" class="form">
@@ -75,27 +75,31 @@ const handleLogin = async () =>
         <button class="back_accaunt"><img src="/Назад.png" alt=""></button>
       </RouterLink>
    </div>
-   <div class="bottom">
-        <div class="column_bottom">
-            <p class="column_title">Для покупателей</p>
-            <a href="">Частые вопросы</a>
-            <a href="">Доставка</a>
-            <a href="">Страховка товара</a>
-            <a href=""><img src="/Вацап_ЧБ.png" alt=""></a>
-        </div>
-        <div class="column_bottom">
-            <p class="column_title">Для продавцов</p>
-            <a href="">Продажа товара</a>
-            <a href="">Открытие своего пунтка выдачи</a>
-            <a href="">Доставка заказов</a>
-            <a href=""><img src="/ТГ_Чб.png" alt=""></a>
-        </div>
-        <div class="column_bottom">
-            <p class="column_title">Наша компания</p>
-            <a href="">О нас</a>
-            <a href="">Контакты</a>
-            <a href="">Поддержка</a>
-            <a href=""><img src="/Макс_ЧБ.png" alt=""></a>
-        </div>
-    </div>
 </template>
+
+<style scoped>
+
+
+.registration
+{
+    margin-top: 25px;
+    font-size: 15px;
+    color: #b82e0c;
+    text-decoration: none;
+    font-weight: 500;
+}
+.registration:hover
+{
+    text-decoration: underline;
+}
+.back_accaunt
+{
+    background: none;
+    border: none;
+    cursor: pointer;
+    margin-top: 30px;
+    opacity: 0.5;
+    transition: opacity 0.2s;
+}
+
+</style>

@@ -7,7 +7,6 @@ import router from '@/router';
 
 const product = ref([]);
 const loading = ref(true);
-
 const loadProductsFromVendor = async() =>
 {
     const session = localStorage.getItem('user_session');
@@ -26,7 +25,7 @@ const loadProductsFromVendor = async() =>
         if(response.ok)
         {
             product.value = await response.json();
-            console.log("Товары с сервера:", product.value);
+            // console.log("Товары с сервера:", product.value);
         }
     }
     catch (error) 
@@ -39,10 +38,46 @@ const loadProductsFromVendor = async() =>
     }
 
 }
-const NotFormed = computed(() =>
+
+// const Cancellation =  async(item) =>
+// {
+//     const confirmed = confirm("Вы уверены что вы хотите отменить доставку товара?");
+//         if(!confirmed)
+//         {
+//             return;
+//         }
+//     item.status = 'Не оформлен';
+//     try
+//     {
+//         const response =  await fetch(`http://localhost:8080/api/products/${item.id}`,
+//         {
+//             method: 'PUT',
+//             headers:{'Content-Type': 'application/json'},
+//             body: JSON.stringify(item),
+//         });
+//         if(!response.ok)
+//         {
+//             throw new Error('Ошибка при сохранении');
+//         }
+        
+//         alert('Товар успешно отменён');
+//     }
+//     catch(error)
+//     {
+//         alert(error.message);
+//     }
+// }
+
+
+const ProductsStatus = computed(() =>
 {
-    return product.value.filter(item => item.status === 'Не оформлен');
+    return product.value.filter(item => item.status);
 }) 
+
+// const Complited = computed(() =>
+// {
+//     return product.value.filter(item => item.status === 'Выполнен');
+// }) 
     onMounted(() =>
     {
         loadProductsFromVendor()
@@ -50,39 +85,15 @@ const NotFormed = computed(() =>
 </script>
 
 <template>
-<header>
-        <nav>
-            <ul>
-                <li class="name_market">Всякая всячина</li>
-                 <RouterLink to="/" class="accaunt-link">
-                    <li>Главная</li>
-                 </RouterLink>
-                <li><input class="search" type="text" placeholder="Поиск"></li>
-                <div class="accaunt">
-                <RouterLink to="/accaunt" class="accaunt-link">
-                   <img class="accaunt_img" src="/Аккаунт.png" alt="">
-                    <li>Аккаунт</li>
-                </RouterLink>
-                </div>
-                <div class="basket">
-                <RouterLink to="/basket" class="accaunt-link">
-                    <img class="basket_img" src="/Корзина.png" alt="">
-                    <li>Корзина</li>
-                </RouterLink>
-                </div>
-                
-            </ul>
-        </nav>
-    </header>
     <div class="warehouse_main">
     <RouterLink to="/accaunt" class="link">
-                <button class="back_btn"><img src="/Назад.png" alt="Назад"></button>
+            <button class="back"><img src="/Назад.png" alt="Назад"></button>
     </RouterLink>
     <div v-if="loading" class="loading">Загрузка товаров из базы данных...</div>
         <div v-else class="warehouse_grid">
+            <p class="products_in_warehouse">Товары на складе</p>
             <div class="order_not_formalized">
-                <p>Не оформленые</p>
-                <div v-for="item in NotFormed" :key="item.id" class="warehouse_product_card">
+                <div v-for="item in ProductsStatus" :key="item.id" class="warehouse_product_card">
                     <RouterLink :to="`/edit_product/${item.id}`" class="product_link">
                         <img class="warehouse_product_card_img" :src="item.mainImage" alt=""> 
                     </RouterLink>
@@ -91,47 +102,95 @@ const NotFormed = computed(() =>
                     <p>Цена: {{ item.price }} ₽</p>
                     <p>Рейтинг: {{ item.rating }} ⭐</p>
                     <button class="go_edit_product" @click="router.push(`/edit_product/${item.id}`)">Изменить</button>
-                    <!-- <RouterLink to="edit_product">Изменить</RouterLink> -->
                 </div>
                  
-            </div>
-            <div class="order_formalized">
-                <p>В процессе</p>
-            </div>
-            <div class="order_completed">
-                <p>Выполнены</p>
             </div>
             <div class="new_product">
                 <button @click="router.push('/create_product')" class="warehouse_create">Добавить новый товар +</button>
             </div>
         </div>
-        
-       
-
-
-        <div class="bottom">
-            <div class="column_bottom">
-                <p class="column_title">Для покупателей</p>
-                <a href="">Частые вопросы</a>
-                <a href="">Доставка</a>
-                <a href="">Страховка товара</a>
-                <a href=""><img src="/Вацап_ЧБ.png" alt=""></a>
-            </div>
-            <div class="column_bottom">
-                <p class="column_title">Для продавцов</p>
-                <a href="">Продажа товара</a>
-                <a href="">Открытие своего пунтка выдачи</a>
-                <a href="">Доставка заказов</a>
-                <a href=""><img src="/ТГ_Чб.png" alt=""></a>
-            </div>
-            <div class="column_bottom">
-                <p class="column_title">Наша компания</p>
-                <a href="">О нас</a>
-                <a href="">Контакты</a>
-                <a href="">Поддержка</a>
-                <a href=""><img src="/Макс_ЧБ.png" alt=""></a>
-            </div>
-        </div>
     </div>
    
 </template>
+
+<style scoped>
+.warehouse_main
+{
+    margin: 20px;
+    padding: 20px;
+}
+.products_in_warehouse
+{
+    font-size: 24px;
+    font-family: 'Lucida Sans';
+}
+.warehouse_grid
+{
+    margin: 20px;
+    padding: 20px;
+    align-items: center;  
+    text-align: center;
+    
+}
+.order_not_formalized
+{
+    margin-top: 70px;
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+    gap: 25px;
+}
+.order_formalized
+{
+    
+    border-right: 3px solid #000000;
+}
+.warehouse_create
+{
+    width: 200px;
+    height: 70px;
+    background-color: #FF9466;
+    border-radius: 40px;
+    cursor: pointer;
+}
+.warehouse_create a
+{
+    text-decoration: none;
+    color: #000000;
+
+}
+.warehouse_product_card
+{
+    max-width: 200px;
+    max-height: 400px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    border: 2px solid #b8b8b8;
+    border-radius: 40px;
+    gap: 7px;
+    margin: 10px 20px 10px 20px;
+    padding: 20px;
+}
+.warehouse_product_card_img
+{
+    height: 180px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-bottom: 12px;
+}
+.go_edit_product
+{
+    background-color: #ff7e5f;
+    color: #ffffff;
+    margin-top: 15px;
+    width: 100px;
+    height: 35px;
+    border-radius: 30px;
+    border-style: none;
+}
+.go_edit_product:hover
+{
+    cursor: pointer;
+}
+</style>

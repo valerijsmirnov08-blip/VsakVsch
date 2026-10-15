@@ -67,30 +67,6 @@ const addToCartFromCatalog = async (productId) =>
 </script>
 <template>
      <div class="page-wrapper">
-     <header>
-        <nav>
-            <ul>
-                <li class="name_market">Всякая всячина</li>
-                 <RouterLink to="/" class="accaunt-link">
-                    <li>Главная</li>
-                 </RouterLink>
-                <li><input class="search" type="text" placeholder="Поиск"></li>
-                <div class="accaunt">
-                <RouterLink to="/accaunt" class="accaunt-link">
-                   <img class="accaunt_img" src="/Аккаунт.png" alt="">
-                    <li>Аккаунт</li>
-                </RouterLink>
-                </div>
-                <div class="basket">
-                    <RouterLink to="/basket" class="accaunt-link">
-                        <img class="basket_img" src="/Корзина.png" alt="">
-                        <li>Корзина</li>
-                    </RouterLink>
-                </div>
-                
-            </ul>
-        </nav>
-    </header>
     <main class="catalog-container">
       <h2 class="catalog-title">Наши товары</h2>
       <div v-if="loading" class="loading">Загрузка товаров из базы данных...</div>
@@ -124,3 +100,128 @@ const addToCartFromCatalog = async (productId) =>
   </div>
 
 </template>
+
+<style scoped>
+.catalog-container {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 20px;
+  font-family: sans-serif;
+}
+.product-details-link
+{
+    text-decoration: none;
+    color: inherit;
+    display: block;
+}
+.catalog-title {
+  margin-bottom: 20px;
+  color: #333;
+}
+
+.loading {
+  text-align: center;
+  font-size: 1.2rem;
+  color: #666;
+  margin-top: 50px;
+}
+
+.products-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+  gap: 25px;
+}
+
+.product-card {
+  background: #ffffff;
+  border: 1px solid #E0E0E0;
+  border-radius: 12px;
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  transition: transform 0.2s, box-shadow 0.2s;
+}
+
+.product-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 8px 20px rgba(0,0,0,0.08);
+}
+
+.image-wrapper {
+  height: 180px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 12px;
+}
+
+.image-wrapper img {
+  max-width: 100%;
+  max-height: 100%;
+  object-fit: contain;
+}
+
+.brand {
+  font-size: 0.8rem;
+  text-transform: uppercase;
+  color: #888;
+}
+
+.model {
+  font-size: 1rem;
+  margin: 4px 0 12px 0;
+  color: #222;
+  height: 40px;
+  overflow: hidden;
+}
+
+.meta-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 15px;
+}
+
+.price {
+  font-weight: bold;
+  font-size: 1.1rem;
+  color: #333;
+}
+
+.rating {
+  font-size: 0.9rem;
+  color: #555;
+}
+
+.card-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-top: auto;
+}
+
+.btn-cart {
+  background-color: #FF9466; 
+  color: white;
+  border: none;
+  padding: 10px;
+  border-radius: 20px;
+  font-weight: bold;
+  cursor: pointer;
+  width: 100%;
+}
+
+.btn-cart:hover {
+  background-color: #ff814d;
+}
+
+.btn-more {
+  text-align: center;
+  text-decoration: none;
+  color: #FF5B46; 
+  font-size: 0.9rem;
+  font-weight: bold;
+  padding: 4px;
+}
+
+</style>

@@ -44,6 +44,28 @@
         }
         return[product.value.mainImage];
     });
+
+
+    const galleryImages = computed(() =>
+    {
+        if(!product.value)
+        {
+            return [];
+        }
+         const images = [];
+        if(product.value.mainImage)
+        {
+            images.push(product.value.mainImage);
+        }
+        if(product.value.gallery)
+        {
+            const extra = product.value.gallery.split(',');
+            images.push(...extra);
+        }
+        return images;
+    });
+
+
   const addToCartFromCatalog = async (productId) =>
 {
     const session = localStorage.getItem('user_session')
@@ -83,30 +105,6 @@
 }
     </script>
 <template>
-    <header>
-        <nav>
-            <ul>
-                <li class="name_market">Всякая всячина</li>
-                 <RouterLink to="/" class="accaunt-link">
-                    <li>Главная</li>
-                 </RouterLink>
-                <li><input class="search" type="text" placeholder="Поиск"></li>
-                <div class="accaunt">
-                <RouterLink to="/accaunt" class="accaunt-link">
-                   <img class="accaunt_img" src="/Аккаунт.png" alt="">
-                    <li>Аккаунт</li>
-                </RouterLink>
-                </div>
-                <div class="basket">
-                    <RouterLink to="/basket" class="accaunt-link">
-                        <img class="basket_img" src="/Корзина.png" alt="">
-                        <li>Корзина</li>
-                    </RouterLink>
-                </div>
-                
-            </ul>
-        </nav>
-    </header>
     <button @click="router.push('/')" class="back"><img src="/Назад.png" alt="Назад"></button>
     <div v-if="loading" class="status_center_msg">Загрузка товара...</div>
     <div v-else-if="errorMessege" class="status_center_msg error_msg">{{ errorMessege }}</div>
@@ -114,7 +112,7 @@
        
         <div class="mini_photo">
             <ul class="container_mini_img">
-                <li v-for="(imgUrl, index) in parsedGallery" :key="index">
+                <li v-for="(imgUrl, index) in galleryImages" :key="index">
                     <img
                     class="mini_img"
                     :src="imgUrl"
@@ -154,27 +152,170 @@
             <p class="rating">{{ product.rating || '0.0'}}</p>
         </div>
     </div>
-    <div class="bottom">
-        <div class="column_bottom">
-            <p class="column_title">Для покупателей</p>
-            <a href="">Частые вопросы</a>
-            <a href="">Доставка</a>
-            <a href="">Страховка товара</a>
-            <a href=""><img src="/Вацап_ЧБ.png" alt=""></a>
-        </div>
-        <div class="column_bottom">
-            <p class="column_title">Для продавцов</p>
-            <a href="">Продажа товара</a>
-            <a href="">Открытие своего пунтка выдачи</a>
-            <a href="">Доставка заказов</a>
-            <a href=""><img src="/ТГ_Чб.png" alt=""></a>
-        </div>
-        <div class="column_bottom">
-            <p class="column_title">Наша компания</p>
-            <a href="">О нас</a>
-            <a href="">Контакты</a>
-            <a href="">Поддержка</a>
-            <a href=""><img src="/Макс_ЧБ.png" alt=""></a>
-        </div>
-    </div>
 </template>
+
+<style scoped>
+.product
+{
+    margin-top: 150px;
+    display: flex;
+    gap: 100px;
+}
+.mini_photo ul
+{
+    
+    display: flex;
+    flex-direction: column;
+    gap: 30px;
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    margin-left: 30px;
+}
+.mini_photo ul li
+{
+    max-width: 100px;
+    max-height: 100px;
+    width: 100px;
+    height: 100px;
+    overflow: hidden;
+}
+.mini_photo ul li img
+{
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+}
+.mini_photo ul li button
+{
+    border: none;
+    cursor: pointer;
+}
+.big_photo
+{
+    width: 200px;
+    height: 400px;
+    overflow: hidden;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    
+}
+.big_photo img
+{
+    width: 100%;
+    height: 100%;
+    
+    object-fit: contain;
+    display: block;
+}
+.description
+{
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+}
+.description_diller
+{
+    display: grid;
+    grid-template-columns: max-content 1fr;
+    gap: 15px 30px;
+    align-items: center;
+    max-width: 400px;
+}
+.answer
+{
+    color: #3a3a3a;
+    font-weight: bold;
+}
+.product_description
+{
+    margin-top: 25px;
+    max-width: 450px;
+    font-family: 'Lucida Sans';
+    border-bottom: 1px solid #eaeaea;
+    padding-bottom: 10px;
+}
+.product_description summary
+{
+    font-size: 18px;
+    font-weight: 700;
+    color: #000000;
+    cursor: pointer;
+    list-style: none;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    user-select: none;
+}
+.description_content
+{
+    margin-top: 12px;
+    font-size: 15px;
+    line-height: 1.6;
+    color: #3a3a3a;
+    animation: In 0.3s ease-out;
+}
+@keyframes In
+{
+    from {opacity: 0; transform: translateY(-5px);}
+    to {opacity: 1; transform: translateY(0);}
+}
+
+.pay
+{
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+.prise
+{
+    font-size: 40px;
+    text-align: center;
+}
+.in_basket
+{
+    background-color: #ff7e5f;
+    border-radius: 40px;
+    border:none;
+    width: 300px;
+    height: 60px;
+    font-size: 20px;
+    font-weight: 700;
+    color: #ffffff;
+    margin-bottom: 20px;
+    cursor: pointer;
+}
+.buy_now
+{
+    background-color: #ffff;
+    border-radius: 40px;
+    border:none;
+    width: 300px;
+    height: 60px;
+    font-size: 20px;
+    font-weight: 700;
+    color: #ff7e5f;
+    cursor: pointer;
+}
+.when
+{
+    align-self: flex-start;
+    margin-left: 0;
+    margin-top: 15px;
+}
+.rating
+{
+    align-self: flex-start;
+    margin-left: 0;
+    margin-top: 5px;
+}
+.rating::after
+{
+    content: "★";
+    color: #f3ef03;
+    margin-right: 4px;
+    font-size: 18px;
+}
+</style>
