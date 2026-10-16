@@ -1,7 +1,6 @@
 package com.example.demo.entity;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
-import com.example.demo.entity.Users; 
 
 import jakarta.persistence.*;
 

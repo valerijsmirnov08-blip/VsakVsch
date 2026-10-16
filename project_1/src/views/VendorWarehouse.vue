@@ -7,6 +7,7 @@ import router from '@/router';
 
 const product = ref([]);
 const loading = ref(true);
+const currentTab = ref('В процессе');
 const loadProductsFromVendor = async() =>
 {
     const session = localStorage.getItem('user_session');
@@ -39,45 +40,11 @@ const loadProductsFromVendor = async() =>
 
 }
 
-// const Cancellation =  async(item) =>
-// {
-//     const confirmed = confirm("Вы уверены что вы хотите отменить доставку товара?");
-//         if(!confirmed)
-//         {
-//             return;
-//         }
-//     item.status = 'Не оформлен';
-//     try
-//     {
-//         const response =  await fetch(`http://localhost:8080/api/products/${item.id}`,
-//         {
-//             method: 'PUT',
-//             headers:{'Content-Type': 'application/json'},
-//             body: JSON.stringify(item),
-//         });
-//         if(!response.ok)
-//         {
-//             throw new Error('Ошибка при сохранении');
-//         }
-        
-//         alert('Товар успешно отменён');
-//     }
-//     catch(error)
-//     {
-//         alert(error.message);
-//     }
-// }
-
 
 const ProductsStatus = computed(() =>
 {
-    return product.value.filter(item => item.status);
+    return product.value.filter(item => item.id);
 }) 
-
-// const Complited = computed(() =>
-// {
-//     return product.value.filter(item => item.status === 'Выполнен');
-// }) 
     onMounted(() =>
     {
         loadProductsFromVendor()
@@ -101,6 +68,7 @@ const ProductsStatus = computed(() =>
                     <p>Бренд: {{item.brand}}</p>
                     <p>Цена: {{ item.price }} ₽</p>
                     <p>Рейтинг: {{ item.rating }} ⭐</p>
+                    <p>Количество на складе: {{ item.quantity }}</p>
                     <button class="go_edit_product" @click="router.push(`/edit_product/${item.id}`)">Изменить</button>
                 </div>
                  

@@ -82,6 +82,7 @@ import { onMounted } from 'vue';
             throw new Error('Ошибка при сохранении');
         }
         alert('Товар успешно обновлен!');
+        router.push('/accaunt');
         }
         catch(error)
         {

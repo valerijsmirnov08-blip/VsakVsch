@@ -38,7 +38,7 @@
             </div>
             <div class="profil_links">
                 <img src="/Покупки.png" alt="">
-                <a href="">Покупки</a>
+                <RouterLink to="/reviews">Покупки и отзывы</RouterLink>
             </div>
             <div class="profil_links">
                 <img src="/Коробка_доставка.png" alt="">

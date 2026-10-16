@@ -11,6 +11,7 @@ import Vendor_O from "./views/VendorOrders.vue";
 import Vendor_S from "./views/VendorStatistics.vue";
 import Vendor_W from "./views/VendorWarehouse.vue";
 import Edit_P from "./views/EditProduct.vue";
+import Reviews from "./views/Reviews.vue";
 const router = createRouter
 ({
     history: createWebHistory(),
@@ -27,6 +28,7 @@ const router = createRouter
         {path: '/vendor_s', component: Vendor_S},
         {path: '/vendor_w', component: Vendor_W},
         {path: '/create_product', component: Create},
+        {path: '/reviews', component: Reviews},
         {path: '/edit_product/:id', component: Edit_P}
     ]
 })

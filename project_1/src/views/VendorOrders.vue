@@ -88,7 +88,7 @@ const updateStatus = async(itemId, newStatus) =>
 </script>
 
 <template>
-    <RouterLink to="/" class="back">
+    <RouterLink to="/accaunt" class="back">
         <button class="back_btn"><img src="/Назад.png" alt="Назад"></button>
     </RouterLink>
     <h1>Заказы магазина</h1>
@@ -96,6 +96,7 @@ const updateStatus = async(itemId, newStatus) =>
         <button @click="currentTab = 'В процессе'">В процессе</button>
         <button @click="currentTab = 'Отправлен'">Отправленные</button>
         <button @click="currentTab = 'Все'">Все</button>
+        <button @click="currentTab = 'Отменен'">Отмененые</button>
     </div>
     
     <div v-if="loading" class="loading">Загрузка товаров из базы данных...</div>
@@ -111,6 +112,7 @@ const updateStatus = async(itemId, newStatus) =>
             </div>
             <div class="vendor_card_post_info">
                 <p>Заказчик: {{ item.order.user.userName }}</p>
+                <p>Пункт выдачи:</p>
                 <p>Срок доставки: {{ item.product?.estimatedDelivery }}</p>
                 <p>Статус: "{{ item.status }}"</p>
                 <!-- <p>{{ item.product?.brand }}</p>
@@ -121,6 +123,7 @@ const updateStatus = async(itemId, newStatus) =>
             </div>
                 <button class="button_send" @click="updateStatus(item.id, 'Отправлен')">Отправить</button>
                 <button class="button_break" @click="updateStatus(item.id, 'Отменен')">Отменить</button>
+                <button class="button_edit" v-if="currentTab = 'Отменен'" @click="router.push(`/edit_product/${item.product?.id}`)">Изменить</button>
             
         </div>
     </div>
@@ -198,6 +201,20 @@ h1
     border-radius: 40px;
     border: none;
     background: linear-gradient(to right, #fa542a, #f78b39);
+    color: #ffff;
+    font-size: 18px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: opacity 0.2s;
+    box-shadow: 0 4px 10px rgba(255, 126, 95, 0.2);
+}
+.button_edit
+{
+    width: 100%;
+    height: 50px;
+    border-radius: 40px;
+    border: none;
+    background: linear-gradient(to right, #ff7e5f, #feb47b);
     color: #ffff;
     font-size: 18px;
     font-weight: 600;
