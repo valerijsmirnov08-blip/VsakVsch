@@ -50,7 +50,7 @@ CREATE TABLE IF NOT EXISTS `order_items` (
 
 -- Дамп данных таблицы market_db.order_items: ~1 rows (приблизительно)
 INSERT INTO `order_items` (`id`, `price`, `quantity`, `status`, `vendor_id`, `order_id`, `product_id`) VALUES
-	(1, 1600.00, 1, 'В процессе', 14, 1, 4);
+	(1, 1600.00, 1, 'Выполнен', 14, 1, 4);
 
 -- Дамп структуры для таблица market_db.orders
 CREATE TABLE IF NOT EXISTS `orders` (
@@ -84,15 +84,29 @@ CREATE TABLE IF NOT EXISTS `products` (
   `gallery` text DEFAULT NULL,
   `quantity` int(11) DEFAULT 0,
   `status` varchar(255) DEFAULT NULL,
+  `orders_quantity` int(11) NOT NULL DEFAULT 0,
   PRIMARY KEY (`id`)
 ) ENGINE=InnoDB AUTO_INCREMENT=10 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_uca1400_ai_ci;
 
 -- Дамп данных таблицы market_db.products: ~4 rows (приблизительно)
-INSERT INTO `products` (`id`, `brand`, `description`, `estimated_delivery`, `main_image`, `model`, `price`, `rating`, `vendor_id`, `vendor_sku`, `warranty`, `gallery`, `quantity`, `status`) VALUES
-	(1, 'Nivea men', 'Отличный мужской шампунь для глубокого очищения и свежести на весь день.', '9 августа', '/шампунь.jpg', 'Шампунь 500мл', 450.00, 4.1, 10, '45782', '1 год', NULL, 0, NULL),
-	(2, 'Garnier', 'Крепкие и здоровые волосы от самых корней. Эффективно устраняет повреждения.', 'Завтра', '/шампунь_2.jpg', 'Fructis SOS Восстановление', 380.00, 4.7, 12, '33910', 'Нет', NULL, 0, NULL),
-	(4, 'PUMA', 'Хорошая худи сам бы носил', '10 дней', '/images.jfif', 'Пума Худи XL', 1600.00, 0, 14, '14', '2 года', '/images_(1).jfif', 9, NULL),
-	(5, 'Машинка', 'Круто', '9 августа', '/images_(2).jfif', 'Машинка Синяя', 900.00, 0, 14, '2352315', '1 год', '/images_(2).jfif', 0, NULL);
+INSERT INTO `products` (`id`, `brand`, `description`, `estimated_delivery`, `main_image`, `model`, `price`, `rating`, `vendor_id`, `vendor_sku`, `warranty`, `gallery`, `quantity`, `status`, `orders_quantity`) VALUES
+	(1, 'Nivea men', 'Отличный мужской шампунь для глубокого очищения и свежести на весь день.', '9 августа', '/шампунь.jpg', 'Шампунь 500мл', 450.00, 4.1, 10, '45782', '1 год', NULL, 0, NULL, 0),
+	(2, 'Garnier', 'Крепкие и здоровые волосы от самых корней. Эффективно устраняет повреждения.', 'Завтра', '/шампунь_2.jpg', 'Fructis SOS Восстановление', 380.00, 4.7, 12, '33910', 'Нет', NULL, 0, NULL, 0),
+	(4, 'PUMA', 'Хорошая худи сам бы носил', '10 дней', '/images.jfif', 'Пума Худи XL', 1600.00, 0, 14, '14', '2 года', '/images_(1).jfif', 9, NULL, 0),
+	(5, 'Машинка', 'Круто', '9 августа', '/images_(2).jfif', 'Машинка Синяя', 900.00, 0, 14, '2352315', '1 год', '/images_(2).jfif', 0, NULL, 0);
+
+-- Дамп структуры для таблица market_db.reviews
+CREATE TABLE IF NOT EXISTS `reviews` (
+  `id` bigint(20) NOT NULL AUTO_INCREMENT,
+  `product_id` bigint(20) NOT NULL,
+  `user_id` bigint(20) NOT NULL,
+  `rating` int(11) NOT NULL,
+  `comment` text NOT NULL,
+  `created_at` datetime NOT NULL,
+  PRIMARY KEY (`id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_uca1400_ai_ci;
+
+-- Дамп данных таблицы market_db.reviews: ~0 rows (приблизительно)
 
 -- Дамп структуры для таблица market_db.users
 CREATE TABLE IF NOT EXISTS `users` (
@@ -108,7 +122,7 @@ CREATE TABLE IF NOT EXISTS `users` (
   UNIQUE KEY `UKk8d0f2n7n88w1a16yhua64onx` (`user_name`)
 ) ENGINE=InnoDB AUTO_INCREMENT=15 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_uca1400_ai_ci;
 
--- Дамп данных таблицы market_db.users: ~3 rows (приблизительно)
+-- Дамп данных таблицы market_db.users: ~5 rows (приблизительно)
 INSERT INTO `users` (`id`, `shop_description`, `shop_name`, `email`, `is_vendor`, `password`, `user_name`) VALUES
 	(1, NULL, NULL, '', b'0', '', ''),
 	(2, NULL, 'wqegwqeg', 'valerijsmirnov08@gmail.com', b'1', '123', 'цапйу'),
