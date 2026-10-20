@@ -33,6 +33,11 @@ public class OrderItem
     @Column  (name = "status", nullable = false)
     private String status = "В процессе";
 
+    @Column(name = "is_reviewed")
+    private Boolean isReviewed = false;
+
+
+
     public OrderItem(){}
     public OrderItem(Long id, Orders order, Product product, Long vendorId, BigDecimal price, int quantity, String status)
     {
@@ -65,4 +70,7 @@ public class OrderItem
 
     public Long getVendorId() {return vendorId;}
     public void setVendorId(Long vendorId) {this.vendorId = vendorId;}
+
+    public Boolean getIsReviewed() {return isReviewed;}
+    public void setIsReviewed(Boolean isReviewed) {this.isReviewed = isReviewed;}
 }

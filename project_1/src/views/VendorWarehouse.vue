@@ -60,7 +60,7 @@ const ProductsStatus = computed(() =>
         <div v-else class="warehouse_grid">
             <p class="products_in_warehouse">Товары на складе</p>
             <div class="order_not_formalized">
-                <div v-for="item in ProductsStatus" :key="item.id" class="warehouse_product_card">
+                <div v-for="item in product" :key="item.id" class="warehouse_product_card">
                     <RouterLink :to="`/edit_product/${item.id}`" class="product_link">
                         <img class="warehouse_product_card_img" :src="item.mainImage" alt=""> 
                     </RouterLink>

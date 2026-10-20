@@ -1,8 +1,10 @@
 package com.example.demo.controller;
 import com.example.demo.entity.CartItem;
+import com.example.demo.entity.OrderItem;
 import com.example.demo.entity.Product;
 import com.example.demo.repository.ProductRepository;
 import com.example.demo.repository.CartRepository;
+import com.example.demo.repository.OrderItemRepository;
 
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -21,6 +23,9 @@ public class CartController {
 
     @Autowired
     private ProductRepository productRepository;
+
+    @Autowired 
+    private OrderItemRepository orderItemRepository;
 
     public static class CartRequest {
         private Long userId;
@@ -67,7 +72,19 @@ public class CartController {
         
         return ResponseEntity.ok(savedItem);
     }
-
+    @GetMapping("/user/{userId}/items")
+    public ResponseEntity<?> getUserOrderItems(@PathVariable Long userId)
+    {
+        try
+        {
+            List<OrderItem> items = orderItemRepository.findByOrderUserId(userId);
+            return ResponseEntity.ok(items);
+        }
+        catch(RuntimeException e)
+        {
+            return ResponseEntity.badRequest().body(e.getMessage());
+        }
+    }
     @GetMapping("/{userId}")
     public List<CartItem> getCartByUserId(@PathVariable Long userId) {
         return cartRepository.findByUserId(userId);
@@ -77,4 +94,5 @@ public class CartController {
     public void deleteFromCart(@PathVariable Long id) {
         cartRepository.deleteById(id);
     }
+
 }

@@ -1,21 +1,25 @@
 package com.example.demo.service;
+
 import org.springframework.stereotype.Service;
 import com.example.demo.entity.CartItem;
 import com.example.demo.entity.Product;
 import com.example.demo.entity.Orders;
 import com.example.demo.entity.OrderItem;
-import com.example.demo.repository.ProductRepository;
+import com.example.demo.entity.ProductMonthlyStat;
 
 import jakarta.transaction.Transactional;
 
 import com.example.demo.repository.CartRepository;
 import com.example.demo.repository.OrderItemRepository;
 import com.example.demo.repository.OrdersRepository;
+import com.example.demo.repository.ProductMonthlyStatRepository;
+import com.example.demo.repository.ProductRepository;
 
 import org.springframework.beans.factory.annotation.Autowired;
 
 import java.math.BigDecimal;
 import java.util.List;
+import java.util.Optional;
 
 
 @Service 
@@ -29,6 +33,8 @@ public class OrderService
     private OrdersRepository ordersRepository;
     @Autowired
     private OrderItemRepository orderItemRepository;
+    @Autowired 
+    private ProductMonthlyStatRepository productMonthlyStatRepository;
 
     @Transactional
     public Orders createOrder(Long userId)
@@ -61,6 +67,7 @@ public class OrderService
         order.setCreatedAt(java.time.LocalDateTime.now());
 
         Orders saveOrder = ordersRepository.save(order);
+        String currentMonth = java.time.YearMonth.now().toString();
         for(CartItem item : cartItems)
         {
             Product product = item.getProduct();
@@ -73,10 +80,34 @@ public class OrderService
             orderItem.setStatus("В процессе");
 
             orderItemRepository.save(orderItem);    
+
+            Optional<ProductMonthlyStat> productMonthlyStats = productMonthlyStatRepository.findByProductIdAndMonthLabel(product.getId(), currentMonth);
+            if(productMonthlyStats.isPresent())
+            {
+                ProductMonthlyStat stat = productMonthlyStats.get();
+
+                Integer a =  stat.getSalesCount() + item.getQuantity();
+
+                stat.setSalesCount(a);
+
+                productMonthlyStatRepository.save(stat);
+            }
+            else
+            {
+                ProductMonthlyStat newStat = new ProductMonthlyStat();
+                newStat.setProductId(product.getId());
+                newStat.setMonthLabel(currentMonth);
+                newStat.setSalesCount(item.getQuantity());
+
+                productMonthlyStatRepository.save(newStat);
+            }
+
+        }       
+            cartRepository.deleteAll(cartItems);
+            return saveOrder;
         }
-        cartRepository.deleteAll(cartItems);
-        return saveOrder;
         
+        
+       
  
     }
-}

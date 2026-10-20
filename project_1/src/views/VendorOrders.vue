@@ -123,7 +123,7 @@ const updateStatus = async(itemId, newStatus) =>
             </div>
                 <button class="button_send" @click="updateStatus(item.id, 'Отправлен')">Отправить</button>
                 <button class="button_break" @click="updateStatus(item.id, 'Отменен')">Отменить</button>
-                <button class="button_edit" v-if="currentTab = 'Отменен'" @click="router.push(`/edit_product/${item.product?.id}`)">Изменить</button>
+                <button class="button_edit" v-if="currentTab === 'Отменен'" @click="router.push(`/edit_product/${item.product?.id}`)">Изменить</button>
             
         </div>
     </div>

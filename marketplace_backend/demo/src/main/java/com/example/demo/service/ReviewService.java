@@ -36,8 +36,26 @@ public class ReviewService
         review.setComment(comment);
         review.setCreatedAt(LocalDateTime.now());
 
-        Review saReview = reviewRepository.save(review);
+        Review savedReview = reviewRepository.save(review);
 
-        Double avgр
+        Double avg = reviewRepository.findAverageRatingByProductId(productId);
+
+        Product product = productRepository.findById(productId)
+        .orElseThrow(() -> new RuntimeException("Товар не найден"));
+
+        if(avg != null)
+        {
+            double roundedRating = BigDecimal.valueOf(avg)
+                    .setScale(1, RoundingMode.HALF_UP)
+                    .doubleValue();
+            product.setRating(roundedRating);
+        }
+        else
+        {
+            product.setRating(0.0);
+        }
+        productRepository.save(product);
+
+        return savedReview;
     }
 }

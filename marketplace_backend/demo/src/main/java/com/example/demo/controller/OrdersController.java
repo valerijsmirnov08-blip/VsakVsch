@@ -69,6 +69,19 @@ public class OrdersController
     // {
 
     // }
+    @GetMapping("/user/{userId}/items")
+    public ResponseEntity<?> getUserOrderItems(@PathVariable Long userId)
+    {
+        try
+        {
+            List<OrderItem> items = orderItemRepository.findByOrderUserId(userId);
+            return ResponseEntity.ok(items);
+        }
+        catch(RuntimeException e)
+        {
+            return ResponseEntity.badRequest().body(e.getMessage());
+        }
+    }
     @PutMapping("/items/{itemId}/status")
     public ResponseEntity<?> updateStatus(@PathVariable Long itemId, @RequestParam String status)
     {
@@ -85,6 +98,22 @@ public class OrdersController
             return ResponseEntity.badRequest().body(e.getMessage());
         }
     }
+    @PutMapping ("/items/{itemId}/reviewed")
+    public ResponseEntity<?> updateReviwed(@PathVariable Long itemId)
+    {
+        try
+        {
+            OrderItem item = orderItemRepository.findById(itemId)
+            .orElseThrow(() -> new RuntimeException("Позиция заказа не найдена"));
+            item.setIsReviewed(true);
+            orderItemRepository.save(item);
 
+            return ResponseEntity.ok(item);
+        }
+        catch(RuntimeException e)
+        {
+            return ResponseEntity.badRequest().body(e.getMessage());
+        }
+    }
     
 }
