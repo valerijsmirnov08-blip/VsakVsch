@@ -45,6 +45,7 @@ import {
     const selectProduct = ref('');
     const product = ref([]);
     const loading = ref(true);
+    const analytics = ref([]);
 
 
     const loadProductsFromVendor = async() =>
@@ -82,37 +83,57 @@ import {
     }
 
 }
-const SelectedProduct = (item) =>
+const SelectedProduct = async (item) =>
 {
     selectProduct.value = item;
+    try
+    {
+        const response = await fetch(`http://localhost:8080/api/analytics/product/${item.id}`);
+        if(response.ok)
+        {
+            analytics.value = await response.json();
+            console.log("Короче вот: ", analytics.value);
+
+            const labels = analytics.value.map(stat => stat.monthLabel);
+            const sales = analytics.value.map(stat => stat.salesCount);
+            const reviews = analytics.value.map(stat => stat.reviewsCount);
+
+            chartData.value = 
+            ({
+                labels:labels,
+                datasets:
+                [
+                    {
+                        type:'line',
+                        label: 'Отзывы',
+                        data:reviews,
+                        borderColor: '#00000',
+                        borderWidth: 2,
+                        fill: false,
+                        tension: 0.4
+                    },
+                    {
+                        type:'bar',
+                        label: `Продажи: ${item.brand}`,
+                        data:sales,
+                        backgroundColor: '#e63946',
+                        borderRadius: 4
+                    }
+                ]
+            });
+        }
+        else {
+            console.error('Бэкенд не нашел эндпоинт, статус:', response.status);
+        }
+    } catch(error) {
+        console.error('Сбой сети:', error);
+    }
     // chartData.value.datasets[0].data = [5, 15, 10, 20];
     // chartData.value.datasets[1].data = [30, 50, 20, 70];
     // chartData.value.datasets[1].label = `Продажи: ${item.brand}`;
 
     // chartData.value = { ...chartData.value };
-    chartData.value = 
-    ({
-        labels:['Январь', 'Февраль', 'Март', 'Апрель'],
-        datasets:
-        [
-            {
-                type:'line',
-                label: 'Отзывы',
-                data:[5, 15, 10, 20],
-                borderColor: '#00000',
-                borderWidth: 2,
-                fill: false,
-                tension: 0.4
-            },
-            {
-                type:'bar',
-                label: `Продажи: ${item.brand}`,
-                data:[30, 50, 20, 70],
-                backgroundColor: '#e63946',
-                borderRadius: 4
-            }
-        ]
-    });
+   
 }
 onMounted (() =>
 {

@@ -32,6 +32,9 @@ private String ShopName;
 @Column(name = "shop_description")
 private String ShopDescription;
 
+@Column(name = "brand_name")
+private String brandName;
+
 public Users() {}
 
 public Long getId() {return id;}
@@ -54,4 +57,7 @@ public void setShopName(String ShopName) {this.ShopName = ShopName;}
 
 public String getShopDescription() {return ShopDescription;}
 public void setShopDescription(String ShopDescription) {this.ShopDescription = ShopDescription;}
+
+public String getBrandName() {return brandName;}
+public void setBrandName(String brandName) {this.brandName = brandName;}
 }

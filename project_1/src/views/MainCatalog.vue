@@ -1,6 +1,9 @@
 <script setup>
     import{ref, onMounted} from 'vue'
     import { RouterLink } from 'vue-router'
+    import { Heart } from 'lucide-vue-next';
+       
+    const favoriteIds = ref([]);
 
     const products = ref([])
     const loading = ref(true)
@@ -60,9 +63,55 @@ const addToCartFromCatalog = async (productId) =>
     }
     
 }
+const toggleFavorite = async (productId) =>
+    {
+      const session = localStorage.getItem('user_session');
+    if (!session) {
+        alert("Пожалуйста, войдите в аккаунт");
+        return;
+    }
+    const user = JSON.parse(session);
+
+    if (favoriteIds.value.includes(productId)) {
+        favoriteIds.value = favoriteIds.value.filter(id => id !== productId);
+    } else {
+        favoriteIds.value.push(productId);
+    }
+    try {
+        await fetch('http://localhost:8080/api/favorites/toggle', {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify({
+                userId: Number(user.id || user.userId),
+                productId: Number(productId)
+            })
+        });
+    } catch (error) {
+        console.error("Ошибка сети при обновлении избранного:", error);
+    }
+        
+    };
+      const loadFavorites = async () => {
+      const session = localStorage.getItem('user_session');
+      if (!session) return;
+
+      const user = JSON.parse(session);
+      const currentUserId = user.id || user.userId;
+
+      try {
+          const response = await fetch(`http://localhost:8080/api/favorites/user/${currentUserId}`);
+          if (response.ok) {
+              const favoriteItems = await response.json();
+              favoriteIds.value = favoriteItems.map(item => item.product ? item.product.id : item.id);
+          }
+      } catch (error) {
+          console.error('Ошибка загрузки избранного:', error);
+      }
+  };
     onMounted(() =>
     {
-        loadProductsFromJava()
+        loadProductsFromJava();
+        loadFavorites();
     })
 </script>
 <template>
@@ -73,7 +122,17 @@ const addToCartFromCatalog = async (productId) =>
       <div v-else class="products-grid">
         <div v-for="product in products" :key="product.id" class="product-card">
             <RouterLink :to="`/product/${product.id}`" class="product-details-link">
-                <div class="image-wrapper">
+               <div class="fav_btn">
+                    <el-button class="favorite_btn" text circle @click.prevent="toggleFavorite(product.id)">
+                        <el-icon size="30px">
+                            <Heart 
+                                :color="favoriteIds.includes(product.id) ? '#ff7e5f' : '#3a3a3a'" 
+                                :fill="favoriteIds.includes(product.id) ? '#ff7e5f' : 'none'" 
+                            />
+                        </el-icon>
+                    </el-button>
+                </div> 
+              <div class="image-wrapper">
                     <img :src="product.mainImage" :alt="product.model" />
                 </div>
                 <div class="product-info">
@@ -136,6 +195,7 @@ const addToCartFromCatalog = async (productId) =>
   background: #ffffff;
   border: 1px solid #E0E0E0;
   border-radius: 12px;
+  position: relative;
   padding: 16px;
   display: flex;
   flex-direction: column;
@@ -146,7 +206,16 @@ const addToCartFromCatalog = async (productId) =>
   transform: translateY(-4px);
   box-shadow: 0 8px 20px rgba(0,0,0,0.08);
 }
-
+.favorite_btn
+{
+    width: 100%;
+    display: flex;
+    justify-content: flex-end;
+    position: absolute;
+    top: 15px;
+    right: 15px;
+   
+}
 .image-wrapper {
   height: 180px;
   display: flex;

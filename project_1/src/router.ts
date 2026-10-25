@@ -12,6 +12,8 @@ import Vendor_S from "./views/VendorStatistics.vue";
 import Vendor_W from "./views/VendorWarehouse.vue";
 import Edit_P from "./views/EditProduct.vue";
 import Reviews from "./views/Reviews.vue";
+import Favorites from "./views/Favorites.vue";
+import Delivery from "./views/Delivery.vue";
 const router = createRouter
 ({
     history: createWebHistory(),
@@ -29,7 +31,9 @@ const router = createRouter
         {path: '/vendor_w', component: Vendor_W},
         {path: '/create_product', component: Create},
         {path: '/reviews', component: Reviews},
-        {path: '/edit_product/:id', component: Edit_P}
+        {path: '/edit_product/:id', component: Edit_P},
+        {path: '/favorites', component:Favorites},
+        {path: '/delivery', component:Delivery}
     ]
 })
 export default router

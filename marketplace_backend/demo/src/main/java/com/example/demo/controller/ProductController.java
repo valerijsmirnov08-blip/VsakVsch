@@ -1,8 +1,11 @@
 package com.example.demo.controller;
+import com.example.demo.dto.ProductCatalogDto;
 import com.example.demo.entity.Product;
 import com.example.demo.repository.ProductRepository;
+import com.example.demo.service.ProductService;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import java.util.Optional;
@@ -17,18 +20,22 @@ public class ProductController
     @Autowired
     private ProductRepository productRepository;
 
+    @Autowired 
+    private ProductService productService;
+
     @GetMapping
-    public List<Product> getAllProducts()
+    public List<ProductCatalogDto> getAllProducts()
     {
-        return productRepository.findAll();
+        return productService.getAllProducts();
     }
     @GetMapping ("/{id}")
     public ResponseEntity<Product> getProductById(@PathVariable Long id)
     {
-        return productRepository.findById(id)
+        return productService.getProductById(id)
         .map(product -> ResponseEntity.ok().body(product))
         .orElse(ResponseEntity.notFound().build());
     }
+    @CacheEvict (value = "productCache", allEntries = true)
     @DeleteMapping("/{id}")
     public ResponseEntity<?> deleteProduct(@PathVariable Long id)
     {
@@ -39,7 +46,8 @@ public class ProductController
         productRepository.deleteById(id);
 
         return ResponseEntity.ok("Товар успешно удален");
-    }  
+    } 
+    @CacheEvict(value = "productCache", allEntries = true) 
     @PutMapping ("/{id}")
     public ResponseEntity<?> updateProductById(@PathVariable Long id, @RequestBody Product updatedData)
     {
@@ -59,6 +67,7 @@ public class ProductController
         productRepository.save(exisitingProduct);
         return  ResponseEntity.ok("Товар успешно обнавлён");
     }
+    @CacheEvict (value = "productCache", allEntries = true)
     @PostMapping ("/create")
     public ResponseEntity<?> createProduct(@RequestBody Product newProduct)
     {

@@ -124,8 +124,8 @@ const filteredOrders = computed(() =>
 </script>
 
 <template>
-    <RouterLink to="/accaunt" class="back">
-        <button class="back_btn"><img src="/Назад.png" alt="Назад"></button>
+    <RouterLink to="/accaunt" class="link">
+            <button class="back"><img src="/Назад.png" alt="Назад"></button>
     </RouterLink>
     <div class="reviews_main">
         <div v-if="loading" class="loading">Загрузка товаров из базы данных...</div>

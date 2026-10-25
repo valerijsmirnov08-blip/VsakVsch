@@ -2,6 +2,9 @@
  <script setup>
     import { ref, onMounted, computed } from 'vue';
     import { useRoute, useRouter } from 'vue-router';
+    import { Heart } from 'lucide-vue-next';
+    
+    const isFavorite = ref(false);
 
     const route = useRoute();
     const router = useRouter();
@@ -26,6 +29,20 @@
             if(product.value)
             {
                 activeImage.value = product.value.mainImage;
+            }
+            const session = localStorage.getItem('user_session');
+            if(session)
+            {
+                const user = JSON.parse(session);
+                const favResponse = await fetch(`http://localhost:8080/api/favorites/check/${user.id || user.userId}/${productId}`);
+                if(favResponse.ok)
+                {
+                    isFavorite.value = (await favResponse.text() === 'true');
+                }
+                else
+                {
+                    console.error("Сервер вернул ошибку при обновлении избранного");
+                }
             }
         } catch (error)
         {
@@ -101,14 +118,49 @@
     {
         console.error(error)
     }
-    
 }
+    const toggleFavorite = async () =>
+    {
+        const session = localStorage.getItem('user_session');
+        if(!session)
+        {
+            alert("Пожалуйста зарегистрируйтесь");
+        }
+        const user = JSON.parse(session);
+        try
+        {
+            const response = await fetch('http://localhost:8080/api/favorites/toggle',{
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify
+                ({
+                    userId: Number(user.id || user.userId),
+                    productId: Number(productId)
+                })
+
+            })
+            if(response.ok)
+            {
+                const favResponse = await fetch(`http://localhost:8080/api/favorites/check/${Number(user.id || user.userId)}/${productId}`);
+                isFavorite.value = (await favResponse.text()) === 'true';
+            } else
+            {
+                console.error("Сервер вернул ошибку при обновлении избранного");
+            }
+        }
+        catch(error)
+        {
+            console.error("Ошибка связи с сервером:", error);
+        }
+        
+    };
     </script>
 <template>
     <button @click="router.push('/')" class="back"><img src="/Назад.png" alt="Назад"></button>
     <div v-if="loading" class="status_center_msg">Загрузка товара...</div>
     <div v-else-if="errorMessege" class="status_center_msg error_msg">{{ errorMessege }}</div>
     <div v-else-if="product" class="product">
+       
        
         <div class="mini_photo">
             <ul class="container_mini_img">
@@ -122,6 +174,7 @@
                 </li>    
             </ul>
         </div>
+        
         <div class="big_photo">
             <img id="main_photo" :src="activeImage" alt="Большое фото">
         </div>
@@ -145,6 +198,11 @@
             
         </div>
         <div class="pay">
+            <el-button class="favorite_btn" text circle @click="toggleFavorite">
+                <el-icon size="30px">
+                    <Heart :color="isFavorite ? '#ff7e5f' : '#3a3a3a'" :fill="isFavorite ? '#ff7e5f' : 'none'" />
+                </el-icon>
+            </el-button>
             <p class="prise">{{ product.price }} ₽</p>
             <button @click="addToCartFromCatalog(product.id)" class="in_basket">В корзину</button>
             <button class="buy_now">Купить сейчас</button>
@@ -157,10 +215,18 @@
 <style scoped>
 .product
 {
+    position: relative;
     margin-top: 150px;
     display: flex;
     gap: 100px;
 }
+.favorite_btn
+{
+    align-self: flex-end;
+    margin-bottom: -15px;
+   
+}
+
 .mini_photo ul
 {
     

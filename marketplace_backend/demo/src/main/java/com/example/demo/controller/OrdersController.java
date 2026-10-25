@@ -64,11 +64,6 @@ public class OrdersController
             return ResponseEntity.badRequest().body(e.getMessage());
         }
     }
-    // @PutMapping ("/items/{itemId}/rating")
-    // public ResponseEntity<?> updateRating(@PathVariable double rating)
-    // {
-
-    // }
     @GetMapping("/user/{userId}/items")
     public ResponseEntity<?> getUserOrderItems(@PathVariable Long userId)
     {

@@ -77,6 +77,8 @@ public class UsersController
     public ResponseEntity<?> becomeVendor(@PathVariable Long id, @RequestBody Map<String, String> body)
     {
         String shopName = body.get("shopName");
+        String shopDescription = body.get("shopDescription");
+        String brandName = body.get("brandName");
         if(shopName == null || shopName.trim().isEmpty())
         {
             return ResponseEntity.badRequest().body("{\"message\": \"Название магазина не может быть пустым!\"}");
@@ -87,12 +89,58 @@ public class UsersController
             Users user = userOpt.get();
             user.setIsVendor(true);
             user.setShopName(shopName);
+            user.setShopDescription(shopDescription);
+            user.setBrandName(brandName);
             Users updatedUser = usersRepository.save(user);
             updatedUser.setPassword(null);
             return ResponseEntity.ok(updatedUser);
         }
         return  ResponseEntity.notFound().build();
     }
-
+    @PostMapping("/user/{userId}")
+    public  ResponseEntity<?> updateUserProfile(@PathVariable  Long userId, @RequestBody Map<String, String> body)
+    {
+        String userName = body.get("userName");
+        String shopName = body.get("shopName");
+        String shopDescription = body.get("shopDescription");
+       
+        
+        Optional<Users> userOpt = usersRepository.findById(userId);
+         
+        if(userOpt.isPresent())
+        {
+            Users user = userOpt.get();
+            user.setUserName(userName);
+           
+            if(user.getIsVendor() != null && user.getIsVendor())
+            {
+               
+                if(shopName == null || shopName.trim().isEmpty())
+                {
+                    return ResponseEntity.badRequest().body("{\"message\": \"Название магазина не может быть пустым!\"}");
+                }
+                user.setShopName(shopName);
+                user.setShopDescription(shopDescription);
+            }
+            Users updateProfile = usersRepository.save(user);
+            return ResponseEntity.ok(updateProfile);
+        }
+        return ResponseEntity.notFound().build();
+    }
+    @PostMapping("/users/{id}/stop_vendor")
+    public ResponseEntity<?> stopVendor(@PathVariable Long id) {
+        Optional<Users> userOpt = usersRepository.findById(id);
+        if (userOpt.isPresent()) {
+            Users user = userOpt.get();
+            user.setIsVendor(false);
+            user.setShopName(null);
+            user.setShopDescription(null);
+            
+            Users updatedUser = usersRepository.save(user);
+            updatedUser.setPassword(null);
+            return ResponseEntity.ok(updatedUser);
+        }
+        return ResponseEntity.notFound().build();
+    }
    
 }

@@ -1,7 +1,9 @@
 package com.example.demo.service;
 
 import com.example.demo.entity.Product;
+import com.example.demo.entity.ProductMonthlyStat;
 import com.example.demo.entity.Review;
+import com.example.demo.repository.ProductMonthlyStatRepository;
 import com.example.demo.repository.ProductRepository;
 import com.example.demo.repository.ReviewRepository;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -21,6 +23,10 @@ public class ReviewService
     private ProductRepository productRepository;
     @Autowired
     private ReviewRepository reviewRepository;
+    @Autowired 
+    private ProductMonthlyStatRepository productMonthlyStatRepository;
+
+
 
     public List<Review> getReviewsProducts(Long productId)
     {
@@ -55,6 +61,20 @@ public class ReviewService
             product.setRating(0.0);
         }
         productRepository.save(product);
+
+
+        String currentMonth = java.time.YearMonth.now().toString();
+        int updatedReviews =  productMonthlyStatRepository.incrementReviewsCount(product.getId(), currentMonth);
+        if(updatedReviews == 0)
+        {
+            ProductMonthlyStat newStat  = new ProductMonthlyStat();
+            newStat.setReviewsCount(1);
+            newStat.setSalesCount(0);
+            newStat.setProductId(product.getId());
+            newStat.setMonthLabel(currentMonth); 
+
+            productMonthlyStatRepository.save(newStat);
+        }
 
         return savedReview;
     }

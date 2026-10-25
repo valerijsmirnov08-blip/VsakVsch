@@ -4,8 +4,16 @@
 
     const router = useRouter();
 
-    const userDate = ref(null);
+    const editName = ref('');
+    const editShopName = ref('');
+    const editShopDesc = ref('');
+    const editBrandName = ref('');
 
+    const isVendor = ref(true);
+    const userDate = ref(null);
+    const userId = ref('');
+
+    const errorMessage = ref('');
     onMounted(() => 
     {
         const session = localStorage.getItem('user_session');
@@ -13,6 +21,11 @@
         if(session)
         {
             userDate.value = JSON.parse(session);
+            editName.value = userDate.value.userName;
+            editShopName.value = userDate.value.ShopName || '';
+            editShopDesc.value = userDate.value.ShopDescription || '';
+            editBrandName.value = userDate.value.brandName || '';
+            userId.value = userDate.value.id || userDate.value.userId;
         }else
         {
             router.push('/enter_accaunt')
@@ -22,19 +35,86 @@
 
     const handleLogout = () => 
     {
+        const confirmed = confirm("Выйти из аккаунта?");
+        if(!confirmed)
+        {
+            return;
+        }
         localStorage.removeItem('user_session');
         userDate.value = null;
         router.push('/enter_accaunt')
     };
+
+    const saveProfile = async() =>
+    {
+        const confirmed = confirm("Сохранить внесённые изменения?");
+        if(!confirmed)
+        {
+            return;
+        }
+        try
+        {
+            const response = await fetch(`http://localhost:8080/api/user/${userId.value}`,
+                {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify
+                    ({
+                        shopName: editShopName.value.trim(),
+                        shopDescription: editShopDesc.value.trim(),
+                        userName: editName.value.trim()
+                    })
+
+                })
+            if(!response.ok)
+            {
+                const errorData = await response.json().catch(() => ({}));
+                throw new Error (errorData.messege  || "Ошибука ввода данных, повтарите попытку позже");
+            }
+            const updateUser = await response.json();
+            localStorage.setItem('user_session', JSON.stringify(updateUser));
+            userDate.value = updateUser;
+            alert("Профиль успешно обновлен!");
+        }
+        catch(error)
+        {
+
+        }
+    }
+    const stopVendor = async () => {
+
+    const confirmed = confirm("Пересать быть продавцом(вы всё потеряете)?");
+    if(!confirmed)
+    {
+        return;
+    }
+    try {
+        const response = await fetch(`http://localhost:8080/api/users/${userId.value}/stop_vendor`, {
+            method: 'POST'
+        });
+
+        if (response.ok) {
+            const updatedUser = await response.json();
+            localStorage.setItem('user_session', JSON.stringify(updatedUser));
+            userDate.value = updatedUser;
+            alert("Вы больше не являетесь продавцом");
+        } else {
+            alert("Ошибка при обновлении статуса");
+        }
+    } catch (error) {
+        console.error("Ошибка соединения:", error);
+    }
+};
     </script>
 <template>   
     <div v-if="userDate" class="main_Accaunt">
         <h1>Здравствуйте, {{ userDate.userName }}!</h1>
-        <div class="profil_container">
+        <div class="content_wrapper">
+             <div class="profil_container">
             
             <div class="profil_links">
                 <img src="/Избранное.png" alt="">
-                <a href="">Избранное</a>
+                <RouterLink to="/favorites">Избранное</RouterLink>
             </div>
             <div class="profil_links">
                 <img src="/Покупки.png" alt="">
@@ -42,11 +122,15 @@
             </div>
             <div class="profil_links">
                 <img src="/Коробка_доставка.png" alt="">
-                <a href="">Доставка</a>
+                <RouterLink to="/delivery">Доставка</RouterLink>
             </div>
             <div v-if="!userDate.isVendor" class="profil_links">
                 <img src="/Продавец_ЧБ.png" alt="">
                 <RouterLink to="/vendor_b">Стать продавцом</RouterLink>
+            </div>
+            <div v-if="userDate.isVendor" class="profil_links" @click="stopVendor">
+                <img src="/Продавец_ЧБ.png" alt="">
+                <a href="#" @click.prevent>Перестать быть продавцом</a>
             </div>
             <div v-if="userDate.isVendor" class="profil_links">
                 <img src="/ЗаказыПродавец_ЧБ.png" alt="">
@@ -68,8 +152,20 @@
                 <img src="/Поддержка.png" alt="">
                 <a href="">Поддержка</a>
             </div>
-                <button @click="handleLogout">Выйти</button>
+                
         </div>
+        <div class="edit_profile">
+            <form action="">
+                <h2>Изменение аккаунта</h2>
+                <input v-model="editName" type="text" placeholder="Изменить имя аккаунта">
+                <input v-model="editShopName" v-if="userDate.isVendor" type="text" placeholder="Изменить название магазина">
+                <input v-model="editShopDesc" v-if="userDate.isVendor" type="text" placeholder="Изменить описание магазина">
+                <input v-model="editBrandName" v-if="userDate.isVendor" type="text" placeholder="Изменить название бренда">
+                <button class="save_btn" @click.prevent="saveProfile">Сохранить изменения</button>
+            </form>
+        </div>
+        </div>
+       <button class="logout_btn" @click="handleLogout">Выйти</button>
        
     </div>
 </template>
@@ -86,6 +182,15 @@
     background-color: #fdfbf9;
     min-height: 70vh;
     font-family: system-ui, -apple-system, sans-serif;  
+}
+.content_wrapper
+{
+    display: flex;
+    flex-direction: row;
+    gap: 50px;
+    justify-content: center;
+    width: 100%;
+    max-width: 1000px;
 }
 .profil_container
 {
@@ -129,6 +234,41 @@
 {
     text-align: center;
 }
+.edit_profile
+{
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    flex: 1;
+    padding: 40px;
+    background-color: #f0ebf4;
+    max-width: 300px;
+    /* border: 1px solid #000; */
+    border-radius: 20px;
+    gap: 20px;
+}
+
+.edit_profile input
+{
+    margin-top: 20px;
+    width: 100%;
+    height: 56px;
+    border-radius: 40px;
+    border: 1px solid #f0edf0;
+    background: #fcfbfc;
+    padding: 0 20px;
+    box-sizing: border-box;
+    font-size: 16px;
+    outline: none;
+    transition: all 0.2s ease;
+    border-color: #000000;
+}
+.edit_profile input:focus
+{
+    border-color: #fa5f39;
+    background-color: #ffff;
+    box-shadow: 0 0 0 4px rgba(255, 126, 95, 0.1);
+}
 .profile_content
 {
     flex: 1;
@@ -153,9 +293,9 @@
     color: #666666;
     line-height: 1.6;
 }
-.profil_container button
+.logout_btn
 {
-    width: 100%;
+    width: 400px;
     height: 50px;
     border-radius: 40px;
     border: none;
@@ -168,7 +308,27 @@
     box-shadow: 0 4px 10px rgba(255, 126, 95, 0.2);
 }
 
-.profil_container button:hover
+.logout_btn:hover
+{
+    background-color: #ffebeb;
+    border-color: #ffcccc;
+}
+.save_btn
+{
+    margin-top: 20px;
+    width: 400px;
+    height: 50px;
+    border-radius: 40px;
+    border: none;
+    background: linear-gradient(to right, #ff7e5f, #feb47b);
+    color: #ffff;
+    font-size: 18px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: opacity 0.2s;
+    box-shadow: 0 4px 10px rgba(255, 126, 95, 0.2);
+}
+.save_btn:hover
 {
     background-color: #ffebeb;
     border-color: #ffcccc;

@@ -6,6 +6,7 @@ const router = useRouter();
 
 const shopName = ref('');
 const brandName = ref('');
+const ShopDescription = ref('');
 
 const userDate = ref(null);
 const errorMessege = ref('');
@@ -42,7 +43,9 @@ const handleCreateShop = async () =>
             headers: {'Content-Type': 'application/json'},
             body: JSON.stringify
             ({
-                shopName: shopName.value.trim()
+                shopName: shopName.value.trim(),
+                brandName: brandName.value.trim(),
+                shopDescription: ShopDescription.value.trim()
             })
         })
         if(!response.ok)
@@ -74,6 +77,7 @@ const handleCreateShop = async () =>
             <form @submit.prevent="handleCreateShop" class="form_vendor">
                 <input v-model="shopName" class="input_vendor_info" type="text" placeholder="Введите название своего магазина">
                 <input v-model="brandName" class="input_vendor_info" type="text" placeholder="Введите название своего бренда(не обязательно)">
+                <input v-model="ShopDescription" class="input_vendor_info" type="text"  placeholder="Введите описание своего магазина(не обязательно)">
                 <p v-if="errorMessege" style="color: red; font-size: 14px; margin: 0;">{{ errorMessege }}</p>
                 <details>
                     <summary class="agreement_vendor">Пользовательское соглашение</summary>
@@ -109,6 +113,7 @@ const handleCreateShop = async () =>
     outline: none;
     transition: all 0.2s ease;
 }
+
 .input_vendor_info:focus
 {
    border-color: #ff7e5f;
@@ -124,6 +129,14 @@ const handleCreateShop = async () =>
 .preface_become_vendor
 {
     hyphens: auto;
+}
+.form_vendor
+{
+    min-width: 600px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 30px;   
 }
 .agreement_vendor
 {

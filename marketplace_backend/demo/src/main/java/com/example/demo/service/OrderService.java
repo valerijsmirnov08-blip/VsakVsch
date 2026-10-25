@@ -19,7 +19,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 
 import java.math.BigDecimal;
 import java.util.List;
-import java.util.Optional;
+// import java.util.Optional;
 
 
 @Service 
@@ -81,28 +81,39 @@ public class OrderService
 
             orderItemRepository.save(orderItem);    
 
-            Optional<ProductMonthlyStat> productMonthlyStats = productMonthlyStatRepository.findByProductIdAndMonthLabel(product.getId(), currentMonth);
-            if(productMonthlyStats.isPresent())
-            {
-                ProductMonthlyStat stat = productMonthlyStats.get();
+            // Optional<ProductMonthlyStat> productMonthlyStats = productMonthlyStatRepository.findByProductIdAndMonthLabel(product.getId(), currentMonth);
+            // if(productMonthlyStats.isPresent())
+            // {
+            //     ProductMonthlyStat stat = productMonthlyStats.get();
 
-                Integer a =  stat.getSalesCount() + item.getQuantity();
+            //     Integer a =  stat.getSalesCount() + item.getQuantity();
 
-                stat.setSalesCount(a);
+            //     stat.setSalesCount(a);
 
-                productMonthlyStatRepository.save(stat);
-            }
-            else
+            //     productMonthlyStatRepository.save(stat);
+            // }
+            // else
+            // {
+            //     ProductMonthlyStat newStat = new ProductMonthlyStat();
+            //     newStat.setProductId(product.getId());
+            //     newStat.setMonthLabel(currentMonth);
+            //     newStat.setSalesCount(item.getQuantity());
+
+            //     productMonthlyStatRepository.save(newStat);
+            // }
+
+            int updatedRows =  productMonthlyStatRepository.incrementSalesCount(product.getId(), currentMonth, item.getQuantity());
+            if(updatedRows == 0)
             {
                 ProductMonthlyStat newStat = new ProductMonthlyStat();
                 newStat.setProductId(product.getId());
                 newStat.setMonthLabel(currentMonth);
-                newStat.setSalesCount(item.getQuantity());
+                newStat.setSalesCount(item.getQuantity()); 
 
                 productMonthlyStatRepository.save(newStat);
             }
-
-        }       
+        }
+            
             cartRepository.deleteAll(cartItems);
             return saveOrder;
         }
