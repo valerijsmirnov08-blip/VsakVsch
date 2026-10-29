@@ -1,11 +1,15 @@
 <script setup>
-import { ref, onMounted, computed } from 'vue';
+import { ref, onMounted, computed, onUnmounted } from 'vue';
 import router from '@/router';
 
 const order = ref([]);
 const currentTab = ref('В процессе');
 const loading = ref(true);
 
+const currentPage  = ref(1);
+const pageSize = ref(20);
+const totalElement = ref(0);
+const loadingMore = ref(false);
 
 const ErrorMessage = ref('');
 const SussegeMessage = ref('');
@@ -20,25 +24,51 @@ const LoadProducts =  async() =>
     }
     const user = JSON.parse(session);
     const vendorId = user.id;
-    try
+   try
     {
-        const response = await fetch(`http://localhost:8080/api/orders/vendor/${vendorId}`);
+        const pageForSpring = currentPage.value - 1;
+        const response = await fetch(`http://localhost:8080/api/orders/vendor/${vendorId}?page=${pageForSpring}&size=${pageSize.value}`)
         if(response.ok)
         {
-            order.value = await response.json();
-            console.log(order.value)
-        }
-    }
-    catch(error)
+            const data = await response.json();
+            console.log("Данные от бэкенда:", data);
+            if(data.content)
+            {
+              order.value = [...order.value, ...data.content];
+              totalElement.value = data.totalElements;
+            }
+            else
+            {
+                order.value = data;
+                totalElement.value = data.length;
+            }
+        } 
+        else
+        {
+            console.error("Сервер вернул ошибку:", response.status);
+        }  
+    } catch (error) 
     {
-        ErrorMessage.value = "Ошибка связи с сервером";
+        console.error('Ошибка связи с сервером Java:', error)
     }
     finally
     {
         loading.value = false;
+        loadingMore.value = false;
     }
 }
-
+const handleScroll = () =>
+{
+    if((window.innerHeight + window.scrollY)  >= document.body.offsetHeight - 200)
+    {
+      if(order.value.length < totalElement.value && !loadingMore.value)
+      {
+          loadingMore.value = true;
+          currentPage.value ++;
+          LoadProducts();
+      }
+    }
+}
 const filteredOrders = computed(() =>
 {
     if (currentTab.value === 'Все')
@@ -84,7 +114,13 @@ const updateStatus = async(itemId, newStatus) =>
     onMounted(() =>
     {
         LoadProducts()
+        window.addEventListener('scroll', handleScroll);
     })
+    onUnmounted(() =>
+    {   
+        window.removeEventListener('scroll',handleScroll)
+    })
+   
 </script>
 
 <template>
@@ -111,7 +147,7 @@ const updateStatus = async(itemId, newStatus) =>
                 <p>{{ item.product?.rating }} ⭐</p>
             </div>
             <div class="vendor_card_post_info">
-                <p>Заказчик: {{ item.order.user.userName }}</p>
+                <p>Заказчик: {{ item.order?.user?.userName }}</p>
                 <p>Пункт выдачи:</p>
                 <p>Срок доставки: {{ item.product?.estimatedDelivery }}</p>
                 <p>Статус: "{{ item.status }}"</p>

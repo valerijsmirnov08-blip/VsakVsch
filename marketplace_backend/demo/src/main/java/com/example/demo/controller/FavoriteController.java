@@ -9,11 +9,14 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
-
+import org.springframework.data.domain.Page;
+import com.example.demo.dto.FavoriteDTO;
 import com.example.demo.repository.FavoriteRepository;
 import com.example.demo.repository.ProductRepository;
 import com.example.demo.repository.UsersRepository;
+import com.example.demo.service.FavoriteService;
 
 import jakarta.transaction.Transactional;
 
@@ -28,6 +31,8 @@ public class FavoriteController
     UsersRepository usersRepository;
     @Autowired 
     ProductRepository productRepository;
+    @Autowired 
+    FavoriteService favoriteService;
 
     public static class InnerFavoriteController
     {
@@ -60,20 +65,15 @@ public class FavoriteController
         }
         return ResponseEntity.ok().build();
     }
-    @GetMapping ("/check/{userId}/{productId}")
-    public  ResponseEntity<Boolean> chekFavorite(@PathVariable  Long userId, @PathVariable  Long productId)
-    {
-        boolean exists = favoriteRepository.findByUserIdAndProductId(userId, productId).isPresent();
-        return ResponseEntity.ok(exists);
-    }
-    @GetMapping ("/user/{userId}")
-    public ResponseEntity<?> getUserFavorite(@PathVariable Long userId)
-    {
-        var userFavorites =    favoriteRepository.findAll().stream()
-        .filter(a -> a.getUser().getId().equals(userId))
-        .map(a -> a.getProduct())
-        .toList();
 
-        return  ResponseEntity.ok(userFavorites);
+    @GetMapping ("/user/{userId}")
+    public Page<FavoriteDTO> getUserFavorite
+    (
+        @RequestParam (defaultValue = "0") int page,
+        @RequestParam (defaultValue = "20")int size,
+        @PathVariable Long userId
+    )
+    {
+        return favoriteService.getFavoritePage(userId, page, size);
     }
 }

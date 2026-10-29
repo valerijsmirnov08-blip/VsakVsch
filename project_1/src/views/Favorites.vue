@@ -1,5 +1,5 @@
 <script setup>
-    import { ref } from 'vue';
+    import { onUnmounted, ref } from 'vue';
     import router from '@/router';
     import { onMounted } from 'vue';
     import { Heart } from 'lucide-vue-next';
@@ -10,7 +10,12 @@
     const product = ref([]);
     const loading = ref(true);
 
-    const ErrorMessege = ref('');
+    const currentPage  = ref(1);
+    const pageSize = ref(20);
+    const totalElement = ref(0);
+    const loadingMore = ref(false);
+
+    const ErrorMessage = ref('');
     const SuccesMessege = ref('');
 
     const loadProductsFromFavorites = async() =>
@@ -18,31 +23,55 @@
         const session = localStorage.getItem('user_session');
         if(!session)
         {
-            alert("Пожалуйста зарегистрируйтесь");
-            router.push('/enter_accaunt');
-            return;
+            ErrorMessage.value = "Пожалуйста войдите в аккаунт";
+            return
         }
         const user = JSON.parse(session);
-        const currentUserId = user.id || user.userId;
-        try
+        const userId = user.id || user.userId;
+    try
+    {
+      const pageForSpring = currentPage.value - 1;
+        const response = await fetch(`http://localhost:8080/api/favorites/user/${userId}?page=${pageForSpring}&size=${pageSize.value}`)
+        if(response.ok)
         {
-            const response = await fetch(`http://localhost:8080/api/favorites/user/${currentUserId}`)
-            if(response.ok)
+            const data = await response.json();
+            console.log("Данные от бэкенда:", data);
+            if(data.content)
             {
-                product.value = await response.json();
-                console.log(product);
+              product.value = [...product.value, ...data.content];
+              totalElement.value = data.totalElements;
             }
             else
             {
-                ErrorMessege.value = "Не удалось загрузить избранное";
+                product.value = data;
+                totalElement.value = data.length;
             }
-        }
-        catch(error)
+        } 
+        else
         {
-            ErrorMessege.value = "Ошибка сети";
-            console.error(error);
-    } finally {
+            console.error("Сервер вернул ошибку:", response.status);
+        }  
+    } catch (error) 
+    {
+        console.error('Ошибка связи с сервером Java:', error)
+    }
+    finally
+    {
         loading.value = false;
+        loadingMore.value = false;
+    }
+}
+
+const handleScroll = () =>
+{
+    if((window.innerHeight + window.scrollY)  >= document.body.offsetHeight - 200)
+    {
+      if(product.value.length < totalElement.value && !loadingMore.value)
+      {
+          loadingMore.value = true;
+          currentPage.value ++;
+          loadProductsFromFavorites();
+      }
     }
 }
 const toggleFavorite = async (productId) =>
@@ -80,7 +109,7 @@ const toggleFavorite = async (productId) =>
             })
             if(response.ok)
             {
-                product.value = product.value.filter(item => item.id !== productId);
+                product.value = product.value.filter(item => item.product?.id !== productId);
             }
             else
             {
@@ -103,9 +132,14 @@ const toggleFavorite = async (productId) =>
 
     onMounted(() =>
     {
+        window.addEventListener('scroll', handleScroll)
         loadProductsFromFavorites();
     }
     )
+    onUnmounted(()=>
+    {
+        window.removeEventListener('scroll', handleScroll)
+    })
     
 </script>
 
@@ -114,31 +148,31 @@ const toggleFavorite = async (productId) =>
             <button class="back"><img src="/Назад.png" alt="Назад"></button>
     </RouterLink>
         <div v-if="loading">Загрузка...</div>
-        <div v-else-if="ErrorMessege">{{ ErrorMessege }}</div>
+        <div v-else-if="ErrorMessage">{{ ErrorMessage }}</div>
         <div v-else class="favorites_grid">
-            <div class="favorites_card" v-for="item in product" :key="item.id" :style="{ opacity: pendingRemovals.includes(item.id) ? 0.5 : 1, transition: 'opacity 0.3s' }">
+            <div class="favorites_card" v-for="item in product" :key="item.id" :style="{ opacity: pendingRemovals.includes(item.product?.id) ? 0.5 : 1, transition: 'opacity 0.3s' }">
                
                 <div class="fav_btn">
-                    <el-button class="favorite_btn" text circle @click="toggleFavorite(item.id)">
+                    <el-button class="favorite_btn" text circle @click="toggleFavorite(item.product?.id)">
                         <el-icon size="30px">
                             <Heart 
-                                :color="pendingRemovals.includes(item.id) ? '#3a3a3a' : '#ff7e5f'" 
-                                :fill="pendingRemovals.includes(item.id) ? 'none' : '#ff7e5f'" 
+                                :color="pendingRemovals.includes(item.product?.id) ? '#3a3a3a' : '#ff7e5f'" 
+                                :fill="pendingRemovals.includes(item.product?.id) ? 'none' : '#ff7e5f'" 
                             />
                         </el-icon>
                     </el-button>
                 </div>
-                <div class="img_wrapper"><img :src="item.mainImage" alt=""></div>
+                <div class="img_wrapper"><img :src="item.product?.mainImage" alt=""></div>
                 <div class="favorite_info">
-                    <p class="brand">{{ item.brand }}</p>
-                    <p class="model">{{ item.model }}</p>
+                    <p class="brand">{{ item.product?.brand }}</p>
+                    <p class="model">{{ item.product?.model }}</p>
                     <div class="favorite_post_info">
-                        <p class="ratyng">⭐ {{ item.rating }}</p>
-                        <p class="quantity">Кол-во: {{ item.quantity }}</p>
+                        <p class="ratyng">⭐ {{ item.product?.rating }}</p>
+                        <p class="quantity">Кол-во: {{ item.product?.quantity }}</p>
                     </div>
                     
                 </div>
-                <button class="more_detales" @click="router.push(`/product/${item.id}`)">Подробнее</button>
+                <button class="more_detales" @click="router.push(`/product/${item.product?.id}`)">Подробнее</button>
             </div>
         </div>
         

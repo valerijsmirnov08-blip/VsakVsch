@@ -1,0 +1,1 @@
+ALTER TABLE products ADD FULLTEXT INDEX ft_search_idx (model, vendor_sku);

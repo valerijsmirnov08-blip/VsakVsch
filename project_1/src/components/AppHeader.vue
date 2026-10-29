@@ -1,5 +1,6 @@
 <script setup>
 import { RouterLink } from 'vue-router';
+import SearchModal from './SearchModal.vue';
 </script>
 <template>
     <header>
@@ -9,7 +10,7 @@ import { RouterLink } from 'vue-router';
                  <RouterLink to="/" class="accaunt-link">
                     <li>Главная</li>
                  </RouterLink>
-                <li><input class="search" type="text" placeholder="Поиск"></li>
+                <li><SearchModal /></li>
                 <div class="accaunt">
                 <RouterLink to="/accaunt" class="accaunt-link">
                    <img class="accaunt_img" src="/Аккаунт.png" alt="">

@@ -5,9 +5,11 @@ import com.example.demo.repository.OrderItemRepository;
 import com.example.demo.service.OrderService;
 import com.example.demo.entity.OrderItem;
 import com.example.demo.entity.Orders;
+import com.example.demo.dto.OrdersVendorDTO;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.data.domain.Page;
 import java.util.List;
 
 @RestController
@@ -51,19 +53,29 @@ public class OrdersController
             return ResponseEntity.badRequest().body(e.getMessage());
         }
     }
-    @GetMapping("/vendor/{vendorId}")
-    public ResponseEntity<?> findVendorId(@PathVariable Long vendorId)
+    @GetMapping ("/vendor/{vendorId}")
+    public Page<OrdersVendorDTO> getOrdersPage
+    (
+        @RequestParam (defaultValue = "0") int page,
+        @RequestParam (defaultValue = "20") int size,
+        @PathVariable Long vendorId
+    )
     {
-        try
-        {
-            List<OrderItem> order = orderItemRepository.findByVendorId(vendorId);
-            return ResponseEntity.ok(order);
-        }
-        catch(RuntimeException e)
-        {
-            return ResponseEntity.badRequest().body(e.getMessage());
-        }
+        return orderService.getOrdersPage(vendorId, page, size);
     }
+    // @GetMapping("/vendor/{vendorId}")
+    // public ResponseEntity<?> findVendorId(@PathVariable Long vendorId)
+    // {
+    //     try
+    //     {
+    //         List<OrderItem> order = orderItemRepository.findByVendorId(vendorId);
+    //         return ResponseEntity.ok(order);
+    //     }
+    //     catch(RuntimeException e)
+    //     {
+    //         return ResponseEntity.badRequest().body(e.getMessage());
+    //     }
+    // }
     @GetMapping("/user/{userId}/items")
     public ResponseEntity<?> getUserOrderItems(@PathVariable Long userId)
     {

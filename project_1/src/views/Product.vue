@@ -34,14 +34,16 @@
             if(session)
             {
                 const user = JSON.parse(session);
-                const favResponse = await fetch(`http://localhost:8080/api/favorites/check/${user.id || user.userId}/${productId}`);
-                if(favResponse.ok)
-                {
-                    isFavorite.value = (await favResponse.text() === 'true');
-                }
-                else
-                {
-                    console.error("Сервер вернул ошибку при обновлении избранного");
+               const favResponse = await fetch(`http://localhost:8080/api/favorites/user/${user.id || user.userId}?size=1000`);
+                if(favResponse.ok) {
+                    const data = await favResponse.json();
+                    const favoriteItems = data.content || [];
+                    const favoriteIds = favoriteItems.map(item => item.product?.id);
+                    
+                    // Проверяем, есть ли ID текущего товара в массиве избранного
+                    isFavorite.value = favoriteIds.includes(Number(productId));
+                } else {
+                    console.error("Сервер вернул ошибку при загрузке избранного");
                 }
             }
         } catch (error)
@@ -141,12 +143,17 @@
             })
             if(response.ok)
             {
-                const favResponse = await fetch(`http://localhost:8080/api/favorites/check/${Number(user.id || user.userId)}/${productId}`);
+               const favResponse = await fetch(`http://localhost:8080/api/favorites/user/${user.id || user.userId}?size=1000`);
+                if(favResponse.ok) {
+                    const data = await favResponse.json();
+                    const favoriteItems = data.content || [];
+                    const favoriteIds = favoriteItems.map(item => item.product?.id);
                 isFavorite.value = (await favResponse.text()) === 'true';
-            } else
+                } else
             {
                 console.error("Сервер вернул ошибку при обновлении избранного");
             }
+        }
         }
         catch(error)
         {

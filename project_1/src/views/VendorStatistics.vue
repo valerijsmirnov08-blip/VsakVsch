@@ -72,6 +72,7 @@ import {
             {
                 console.error('Сервер ответил ошибкой HTTP:', response.status);
             }
+        
     }
     catch (error) 
     {

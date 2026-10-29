@@ -8,6 +8,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.data.domain.Page;
 import java.util.Optional;
 import java.util.List;
 
@@ -24,10 +25,14 @@ public class ProductController
     private ProductService productService;
 
     @GetMapping
-    public List<ProductCatalogDto> getAllProducts()
-    {
-        return productService.getAllProducts();
-    }
+    public Page<ProductCatalogDto> getProductsPage
+    (   @RequestParam (defaultValue = "0") int page,
+        @RequestParam (defaultValue = "20") int size
+    )
+        {
+            return   productService.getProductsPage(page, size);
+        }
+
     @GetMapping ("/{id}")
     public ResponseEntity<Product> getProductById(@PathVariable Long id)
     {
@@ -82,6 +87,16 @@ public class ProductController
     public List<Product> findByVendorId(@PathVariable Long vendorId)
     {
         return productRepository.findByVendorId(vendorId);
+    }
+   @GetMapping("/search")
+    public ResponseEntity<List<Product>> searchProducts
+    (
+        @RequestParam String searchText,
+        @RequestParam(required = false) Long categoryId)
+    {
+    
+    List<Product> results = productService.search(searchText, categoryId);
+    return ResponseEntity.ok(results);
     }
 }
 

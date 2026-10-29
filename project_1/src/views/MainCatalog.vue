@@ -1,31 +1,70 @@
 <script setup>
-    import{ref, onMounted} from 'vue'
+    import{ref, onMounted, onUnmounted} from 'vue'
     import { RouterLink } from 'vue-router'
     import { Heart } from 'lucide-vue-next';
        
     const favoriteIds = ref([]);
 
+    const loadingMore = ref(false);
+
+    const currentPage  = ref(1);
+    const pageSize = ref(20);
+    const totalElement = ref(0);
+
     const products = ref([])
     const loading = ref(true)
+    
 
     const loadProductsFromJava = async () =>
 {
     try
     {
-        const response = await fetch('http://localhost:8080/api/products')
+      const pageForSpring = currentPage.value - 1;
+        const response = await fetch(`http://localhost:8080/api/products?page=${pageForSpring}&size=${pageSize.value}`)
         if(response.ok)
         {
-            products.value = await response.json() 
-        }    
+            const data = await response.json();
+            console.log("Данные от бэкенда:", data);
+            if(data.content)
+            {
+              products.value = [...products.value, ...data.content];
+              totalElement.value = data.totalElements;
+            }
+            else
+            {
+                products.value = data;
+                totalElement.value = data.length;
+            }
+        } 
+        else
+        {
+            console.error("Сервер вернул ошибку:", response.status);
+        }  
     } catch (error) 
     {
         console.error('Ошибка связи с сервером Java:', error)
     }
     finally
     {
-        loading.value = false
+        loading.value = false;
+        loadingMore.value = false;
     }
 }
+
+const handleScroll = () =>
+{
+    if((window.innerHeight + window.scrollY)  >= document.body.offsetHeight - 200)
+    {
+      if(products.value.length < totalElement.value && !loadingMore.value)
+      {
+          loadingMore.value = true;
+          currentPage.value ++;
+          loadProductsFromJava();
+      }
+    }
+}
+
+
 const addToCartFromCatalog = async (productId) =>
 {
     const session = localStorage.getItem('user_session')
@@ -63,6 +102,7 @@ const addToCartFromCatalog = async (productId) =>
     }
     
 }
+
 const toggleFavorite = async (productId) =>
     {
       const session = localStorage.getItem('user_session');
@@ -99,10 +139,12 @@ const toggleFavorite = async (productId) =>
       const currentUserId = user.id || user.userId;
 
       try {
-          const response = await fetch(`http://localhost:8080/api/favorites/user/${currentUserId}`);
-          if (response.ok) {
-              const favoriteItems = await response.json();
-              favoriteIds.value = favoriteItems.map(item => item.product ? item.product.id : item.id);
+          const response = await fetch(`http://localhost:8080/api/favorites/user/${currentUserId}?size=1000`);
+          if (response.ok)
+          {
+            const data = await response.json();
+            const favoriteItems = data.content || [];
+            favoriteIds.value = favoriteItems.map(item => item.product?.id);
           }
       } catch (error) {
           console.error('Ошибка загрузки избранного:', error);
@@ -110,8 +152,13 @@ const toggleFavorite = async (productId) =>
   };
     onMounted(() =>
     {
-        loadProductsFromJava();
-        loadFavorites();
+      loadProductsFromJava();
+      loadFavorites();
+      window.addEventListener('scroll', handleScroll);
+    })
+    onUnmounted(() =>
+    {
+      window.removeEventListener('scroll', handleScroll);
     })
 </script>
 <template>
@@ -155,6 +202,8 @@ const toggleFavorite = async (productId) =>
 
         </div>
       </div>
+      <div v-if="loadingMore" class="loading">Загружаем еще...</div>
+      
     </main>
   </div>
 
@@ -257,19 +306,22 @@ const toggleFavorite = async (productId) =>
   color: #333;
 }
 
-.rating {
+.rating
+{
   font-size: 0.9rem;
   color: #555;
 }
 
-.card-actions {
+.card-actions
+{
   display: flex;
   flex-direction: column;
   gap: 8px;
   margin-top: auto;
 }
 
-.btn-cart {
+.btn-cart
+{
   background-color: #FF9466; 
   color: white;
   border: none;
@@ -280,11 +332,14 @@ const toggleFavorite = async (productId) =>
   width: 100%;
 }
 
-.btn-cart:hover {
+.btn-cart:hover
+{
   background-color: #ff814d;
 }
 
-.btn-more {
+.btn-more
+
+{
   text-align: center;
   text-decoration: none;
   color: #FF5B46; 
@@ -292,5 +347,4 @@ const toggleFavorite = async (productId) =>
   font-weight: bold;
   padding: 4px;
 }
-
 </style>

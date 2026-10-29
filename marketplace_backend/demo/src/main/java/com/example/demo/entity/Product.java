@@ -38,6 +38,10 @@ public class Product
 
     @Column (nullable = false)
     private int quantity;
+    
+    @ManyToOne
+    @JoinColumn(name = "category_id")
+    private Category category;
 
     public Long getId() {return id;}
     public void setId(Long id) {this.id = id;}
@@ -77,5 +81,8 @@ public class Product
 
     public int getQuantity() {return quantity;}
     public void setQuantity(int quantity) {this.quantity = quantity;}
+
+    public Category getCategory() {return category;}
+    public void setCategory(Category category) {this.category = category;}
 
 }

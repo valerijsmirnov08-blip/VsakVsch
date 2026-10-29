@@ -1,6 +1,8 @@
 package com.example.demo.service;
 
 import org.springframework.stereotype.Service;
+
+import com.example.demo.dto.OrdersVendorDTO;
 import com.example.demo.entity.CartItem;
 import com.example.demo.entity.Product;
 import com.example.demo.entity.Orders;
@@ -16,9 +18,11 @@ import com.example.demo.repository.ProductMonthlyStatRepository;
 import com.example.demo.repository.ProductRepository;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Page;
+import java.util.List;
 
 import java.math.BigDecimal;
-import java.util.List;
 // import java.util.Optional;
 
 
@@ -36,9 +40,25 @@ public class OrderService
     @Autowired 
     private ProductMonthlyStatRepository productMonthlyStatRepository;
 
+     public Page<OrdersVendorDTO> getOrdersPage(Long vendorId, int page, int size)
+    {
+        return orderItemRepository.findByVendorId(vendorId, PageRequest.of(page, size))
+        .map(order -> new OrdersVendorDTO(order));
+    }
+
     @Transactional
     public Orders createOrder(Long userId)
     {
+        // public List<OrdersVendorDTO> getAllOrders()
+        // {
+        //     return orderItemRepository.findAll().stream()
+        //     .map(order -> new OrdersVendorDTO(order))
+        //     .toList();
+        // }
+       
+
+
+
         List<CartItem> cartItems = cartRepository.findByUserId(userId);
         if(cartItems.isEmpty())
         {

@@ -7,6 +7,8 @@ public class ProductCatalogDto
     private String brand;
     private String model;
     private BigDecimal price;
+    private String mainImage;
+    private Double rating;
     
     public ProductCatalogDto(Product product)
     {
@@ -14,8 +16,8 @@ public class ProductCatalogDto
         this.brand = product.getBrand();
         this.model = product.getModel();
         this.price = product.getPrice();
-
-       
+        this.mainImage = product.getMainImage();
+        this.rating = product.getRating();
     }
         public Long getId() {return id;}
         public void setId(Long id) {this.id = id;}
@@ -28,4 +30,10 @@ public class ProductCatalogDto
 
         public BigDecimal getPrice() {return price;}
         public void setPrice(BigDecimal price) {this.price = price;}
+
+        public String getMainImage() {return mainImage ;}
+        public void setMainImage(String mainImage  ) {this.mainImage  = mainImage ;}
+
+        public Double getRating() {return rating;}
+        public void setRating(Double rating) {this.rating = rating;}
 }

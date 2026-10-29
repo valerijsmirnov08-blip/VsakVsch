@@ -2,6 +2,7 @@
 import { RouterView } from 'vue-router';
 import AppHeader from '@/components/AppHeader.vue';
 import AppFooter from '@/components/AppFooter.vue';
+import SupportChat from './components/SupportChat.vue';
 </script>
 <template>
   <div class="app-layout">
@@ -11,6 +12,7 @@ import AppFooter from '@/components/AppFooter.vue';
     </main>
       <AppFooter />
   </div>
+  <SupportChat/>
 </template>
 <style scoped>
 .app-layout {
