@@ -63,7 +63,7 @@ public class ReviewService
         productRepository.save(product);
 
 
-        String currentMonth = java.time.YearMonth.now().toString();
+        java.time.LocalDate currentMonth = java.time.LocalDate.now();
         int updatedReviews =  productMonthlyStatRepository.incrementReviewsCount(product.getId(), currentMonth);
         if(updatedReviews == 0)
         {
@@ -71,7 +71,7 @@ public class ReviewService
             newStat.setReviewsCount(1);
             newStat.setSalesCount(0);
             newStat.setProductId(product.getId());
-            newStat.setMonthLabel(currentMonth); 
+            newStat.setStatDate(currentMonth); 
 
             productMonthlyStatRepository.save(newStat);
         }

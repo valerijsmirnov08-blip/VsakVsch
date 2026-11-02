@@ -1,7 +1,6 @@
 <script setup>
     import { onMounted, ref } from 'vue'
     import {useRouter} from 'vue-router';
-
     const router = useRouter();
     
 
@@ -190,7 +189,7 @@
     }
 };
     </script>
-<template>   
+<template>  
     <div v-if="userDate" class="main_Accaunt">
         <h1>Здравствуйте, {{ userDate.userName }}!</h1>
         <div class="content_wrapper">
@@ -216,7 +215,11 @@
                 <img src="/Продавец_ЧБ.png" alt="">
                 <a href="#" @click.prevent>Перестать быть продавцом</a>
             </div>
-            <div v-if="userDate.isVendor" class="profil_links">
+            <div class="profil_links">
+                <img src="/СтатистикаПродавец_ЧБ.png" alt="">
+                <RouterLink to="/vendor_dash_board">Панель продавца</RouterLink>
+            </div>
+            <!-- <div v-if="userDate.isVendor" class="profil_links">
                 <img src="/ЗаказыПродавец_ЧБ.png" alt="">
                 <RouterLink to="/vendor_o">Заказы</RouterLink>
             </div>
@@ -227,7 +230,7 @@
             <div v-if="userDate.isVendor" class="profil_links">
                 <img src="/Склад_Продавец_ЧБ.png" alt="">
                 <RouterLink to="/vendor_w">Склад</RouterLink>
-            </div>
+            </div> -->
             <div class="profil_links">
                 <img src="/Работа.png" alt="">
                 <a class="accaunt_work" href ="">Работа на складе/<wbr>Пункте выдачи</a>

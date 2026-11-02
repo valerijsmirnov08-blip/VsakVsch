@@ -87,7 +87,7 @@ public class OrderService
         order.setCreatedAt(java.time.LocalDateTime.now());
 
         Orders saveOrder = ordersRepository.save(order);
-        String currentMonth = java.time.YearMonth.now().toString();
+        java.time.LocalDate currentMonth = java.time.LocalDate.now();
         for(CartItem item : cartItems)
         {
             Product product = item.getProduct();
@@ -127,7 +127,7 @@ public class OrderService
             {
                 ProductMonthlyStat newStat = new ProductMonthlyStat();
                 newStat.setProductId(product.getId());
-                newStat.setMonthLabel(currentMonth);
+                newStat.setStatDate(currentMonth);
                 newStat.setSalesCount(item.getQuantity()); 
 
                 productMonthlyStatRepository.save(newStat);

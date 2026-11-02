@@ -4,6 +4,7 @@ import {ref, onMounted, computed} from 'vue';
 import { RouterLink } from 'vue-router';
 import { errorMessages, parse } from 'vue/compiler-sfc';
 
+
 const cartItems = ref([]);
 const loading = ref(true);
 

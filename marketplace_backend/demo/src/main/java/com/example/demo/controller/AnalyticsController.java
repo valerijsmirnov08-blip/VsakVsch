@@ -18,9 +18,15 @@ public class AnalyticsController
     AnalyticsService analyticsService;
 
     @GetMapping ("/product/{productId}")
-    public ResponseEntity <List<ProductMonthlyStat>> findByProductIdOrderByMonthLabelAsc(@PathVariable Long productId)
+    public ResponseEntity <List<ProductMonthlyStat>> getProductStats(@PathVariable Long productId)
     {
         List<ProductMonthlyStat> analitics = analyticsService.getProductStats(productId);
         return ResponseEntity.ok(analitics);
+    }
+    @GetMapping ("/vendor/{vendorId}")
+    public ResponseEntity <List<ProductMonthlyStat>> getVendorStats(@PathVariable  Long vendorId, @RequestParam String period)
+    {
+        List<ProductMonthlyStat> analiticsVendor = analyticsService.getVendorStats(vendorId, period);
+        return ResponseEntity.ok(analiticsVendor);
     }
 }
