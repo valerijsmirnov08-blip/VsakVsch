@@ -13,7 +13,7 @@
 
     const changeStatus = async(item) => 
     {
-        const response = await fetch(`h`)
+        const response = await fetch(`http://localhost:8080/api/reviews/`)
         console.log("Меняем статус для отзыва с ID:", item.id);
     
         activeMenu.value = null;
