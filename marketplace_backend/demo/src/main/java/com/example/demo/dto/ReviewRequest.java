@@ -15,6 +15,7 @@ public class ReviewRequest
     @JsonProperty("isComplaint")
     private Boolean isComplaint;
     private List<Long> complaintCategoryIds;
+    private String complaintText;
 
     public ReviewRequest() {}
 
@@ -42,4 +43,7 @@ public class ReviewRequest
 
     public List<Long> getComplaintCategoryIds() { return complaintCategoryIds; }
     public void setComplaintCategoryIds(List<Long> complaintCategoryIds) { this.complaintCategoryIds = complaintCategoryIds; }
+
+    public String getComplaintText() { return complaintText; }
+    public void setComplaintText(String complaintText) { this.complaintText = complaintText; }
 }

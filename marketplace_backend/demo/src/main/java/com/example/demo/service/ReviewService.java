@@ -1,6 +1,7 @@
 package com.example.demo.service;
 
 import com.example.demo.entity.ComplaintCategory;
+import com.example.demo.entity.ComplaintStatus;
 import com.example.demo.entity.OrderItem;
 import com.example.demo.entity.Product;
 import com.example.demo.entity.ProductMonthlyStat;
@@ -43,7 +44,7 @@ public class ReviewService
         return reviewRepository.findByProductId(productId);
     }
     @Transactional 
-    public Review addReview(Long productId,Long userId, int rating, String comment, Long orderItemId, List<String> photoUrl, boolean isComplaint, List<Long> complaintCategoryIds)
+    public Review addReview(Long productId,Long userId, int rating, String comment, Long orderItemId, List<String> photoUrl, boolean isComplaint, List<Long> complaintCategoryIds, String complaintText)
     {
         Review review = new Review();
         OrderItem item = orderItemRepository.findById(orderItemId).orElseThrow();
@@ -62,7 +63,12 @@ public class ReviewService
         review.setOrderItemId(item);
         review.setIsRead(false);
         review.setIsComplaint(isComplaint);
+        review.setComplaintText(complaintText);
         review.setCreatedAt(LocalDateTime.now());
+        if (isComplaint)
+        {
+            review.setComplaintStatus(ComplaintStatus.UNPROCESSED);
+        }
         if (isComplaint && complaintCategoryIds != null && !complaintCategoryIds.isEmpty())
         {
             List<ComplaintCategory> categories = complaintCategoryRepository.findAllById(complaintCategoryIds);

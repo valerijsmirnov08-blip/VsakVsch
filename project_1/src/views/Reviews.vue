@@ -13,6 +13,7 @@ const ratingValue = ref(0);
 const showModel = ref(false);
 const selectedProduct = ref(null);
 const commentText = ref('');
+const complaintTextContent = ref('');
 const is_reviewed = ref(false);
 const selectedOrderItem = ref(null);
 const gallery = ref([]);
@@ -110,7 +111,10 @@ const SaveReview = async() =>
         photoUrl: gallery.value,
         orderItemId: selectedOrderItem.value.id,
         isComplaint: isComplaint.value,
-        complaintCategoryIds: isComplaint.value ? selectedSubIds.value : []
+        complaintCategoryIds: isComplaint.value ? selectedSubIds.value : [],
+        complaintText: isComplaint.value ? complaintTextContent.value : null
+
+        
     }
 
     try
@@ -245,11 +249,12 @@ const filteredOrders = computed(() =>
 
                     <div v-if="subCategories.length > 0" style="margin-top: 15px; display: flex; flex-direction: column; height: 100%;">
                         <p style="font-weight: bold; margin-bottom: 5px;">Уточните причину:</p>
-                        <select v-model="selectedSubIds" multiple style="flex-grow: 1; border-radius: 10px; padding: 10px; border: 1px solid #ccc; outline: none;">
-                            <option v-for="sub in subCategories" :key="sub.id" :value="sub.id" style="padding: 5px;">
-                                {{ sub.name }}
-                            </option>
-                        </select>
+                        <div style="flex-grow: 1; border-radius: 10px; padding: 10px; border: 1px solid #ccc; max-height: 150px; overflow-y: auto; display: flex; flex-direction: column; gap: 8px;">
+                            <div v-for="sub in subCategories" :key="sub.id" style="display: flex; align-items: center;">
+                                <input type="checkbox" :id="'sub-'+sub.id" :value="sub.id" v-model="selectedSubIds" style="cursor: pointer;">
+                                <label :for="'sub-'+sub.id" style="margin-left: 8px; cursor: pointer;">{{ sub.name }}</label>
+                            </div>
+                        </div>
                     </div>
                 </div>
             </div>

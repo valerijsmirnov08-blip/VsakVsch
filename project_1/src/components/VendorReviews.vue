@@ -1,5 +1,5 @@
 <script setup>
-    import {computed, onMounted, ref} from 'vue';
+import {computed, onMounted, ref} from 'vue';
 
     const filter = ref('Все');
     const product = ref([]);
@@ -13,10 +13,40 @@
 
     const changeStatus = async(item) => 
     {
-        const response = await fetch(`http://localhost:8080/api/reviews/`)
-        console.log("Меняем статус для отзыва с ID:", item.id);
+        try
+        {
+            const newStatus = item.statusReview === 'Не просмотрено';
+            const response = await fetch(`http://localhost:8080/api/reviews/update-status`,
+            {
+                method: 'PUT',
+                headers: {'Content-Type' : 'application/json'},
+                body: JSON.stringify
+                ({
+                    id: item.id,
+                    isRead: newStatus
+                })
+            })
+            if(response.ok)
+            {
+                console.log("Статус успешно изменен для ID:", item.id);
+                await loadReviews();
+            }
+            else
+            {
+                const errText = await response.text();
+                console.error("Ошибка от бэкенда:", errText);
+            }
+        }
+        catch(error)
+        {
+            console.error("Сбой сети:", error);
+        }
+        finally
+        {
+            activeMenu.value = null;
+        }
     
-        activeMenu.value = null;
+       
     }
 
 
@@ -27,8 +57,10 @@
         const vendorId = user.id;
         
         const response = await fetch(`http://localhost:8080/api/reviews/vendor/${vendorId}`);
-        if (response.ok) {
-            review.value = await response.json();
+        if (response.ok)
+        {
+            const rawData = await response.json();
+            review.value = rawData.filter(item => item.isComplaint !== true);
             console.log("Загруженные отзывы:", review.value);
         } else {
             const errorText = await response.text();
@@ -107,7 +139,7 @@
                     <button class="dots_btn" @click="toggleMenu(item.id)">⋮</button>
                     
                     <div v-if="activeMenu === item.id" class="dropdown_menu">
-                        <button>Сменить статус</button>
+                        <button @click="changeStatus(item)">Сменить статус отзывы</button>
                     </div>
                 </td>
             </tr>
