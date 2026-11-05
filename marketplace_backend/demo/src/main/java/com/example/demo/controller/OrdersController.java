@@ -90,7 +90,7 @@ public class OrdersController
         }
     }
     @PutMapping("/items/{itemId}/status")
-    public ResponseEntity<?> updateStatus(@PathVariable Long itemId, @RequestParam String status)
+    public ResponseEntity<?> updateStatus(@PathVariable Long itemId, @RequestBody  String status)
     {
         try
         {

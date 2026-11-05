@@ -40,7 +40,6 @@
                     const favoriteItems = data.content || [];
                     const favoriteIds = favoriteItems.map(item => item.product?.id);
                     
-                    // Проверяем, есть ли ID текущего товара в массиве избранного
                     isFavorite.value = favoriteIds.includes(Number(productId));
                 } else {
                     console.error("Сервер вернул ошибку при загрузке избранного");

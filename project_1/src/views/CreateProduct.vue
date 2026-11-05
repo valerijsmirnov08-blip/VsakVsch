@@ -209,10 +209,10 @@ const handleCreateProduct = async() =>
 .main_create_product {
     font-family: system-ui, -apple-system, sans-serif;
     width: 100%;
-    max-width: 550px; /* Ограничиваем ширину для идеального центрирования */
+    max-width: 550px;
     display: flex;
     flex-direction: column;
-    align-items: center; /* Центрируем заголовок и кнопку назад внутри контейнера */
+    align-items: center;
 }
 h1 {
     font-size: 28px;

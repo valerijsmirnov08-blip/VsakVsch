@@ -1,11 +1,17 @@
 package com.example.demo.service;
 
+import com.example.demo.entity.ComplaintCategory;
+import com.example.demo.entity.OrderItem;
 import com.example.demo.entity.Product;
 import com.example.demo.entity.ProductMonthlyStat;
 import com.example.demo.entity.Review;
+import com.example.demo.entity.ReviewPhoto;
+import com.example.demo.repository.ComplaintCategoryRepository;
+import com.example.demo.repository.OrderItemRepository;
 import com.example.demo.repository.ProductMonthlyStatRepository;
 import com.example.demo.repository.ProductRepository;
 import com.example.demo.repository.ReviewRepository;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -25,6 +31,10 @@ public class ReviewService
     private ReviewRepository reviewRepository;
     @Autowired 
     private ProductMonthlyStatRepository productMonthlyStatRepository;
+    @Autowired
+    private OrderItemRepository orderItemRepository;
+    @Autowired
+    private ComplaintCategoryRepository complaintCategoryRepository;
 
 
 
@@ -33,14 +43,31 @@ public class ReviewService
         return reviewRepository.findByProductId(productId);
     }
     @Transactional 
-    public Review addReview(Long productId,Long userId, int rating, String comment)
+    public Review addReview(Long productId,Long userId, int rating, String comment, Long orderItemId, List<String> photoUrl, boolean isComplaint, List<Long> complaintCategoryIds)
     {
         Review review = new Review();
+        OrderItem item = orderItemRepository.findById(orderItemId).orElseThrow();
+        if (photoUrl != null) {
+            for (String url : photoUrl) {
+                ReviewPhoto photo = new ReviewPhoto();
+                photo.setUrl(url);                    
+                photo.setReviewsId(review);       
+                review.getPhotos().add(photo);
+            }
+        }
         review.setProductId(productId);
         review.setUserId(userId);
         review.setRating(rating);
         review.setComment(comment);
+        review.setOrderItemId(item);
+        review.setIsRead(false);
+        review.setIsComplaint(isComplaint);
         review.setCreatedAt(LocalDateTime.now());
+        if (isComplaint && complaintCategoryIds != null && !complaintCategoryIds.isEmpty())
+        {
+            List<ComplaintCategory> categories = complaintCategoryRepository.findAllById(complaintCategoryIds);
+            review.setComplaintCategories(categories);
+        }
 
         Review savedReview = reviewRepository.save(review);
 

@@ -12,8 +12,10 @@ import {
     CategoryScale,
     LinearScale,
     LineElement,
-    PointElement} from 'chart.js';
-    ChartJS.register(Title, Tooltip, Legend, BarElement, CategoryScale, LineElement, LinearScale, PointElement)
+    PointElement,
+    LineController,
+    BarController} from 'chart.js';
+    ChartJS.register(Title, Tooltip, Legend, BarElement, CategoryScale, LineElement, LinearScale,LineController, PointElement, BarController)
 
     const chartData = ref
     ({
@@ -23,14 +25,15 @@ import {
             {
                 type:'line',
                 label: 'Отзывы',
-                data:[10,25,15,35],
-                borderColor: '#00000',
+                data:[10, 25, 15, 35],
+                borderColor: '#000000',
                 borderWidth: 2,
                 fill: false,
-                tension: 0.4
+                tension: 0.4,
+                pointRadius: 5,           
+                pointBackgroundColor: '#000000'
             },
             {
-                type:'bar',
                 label: 'Продажи',
                 data:[50,80,40,90],
                 backgroundColor: '#e63946',
@@ -40,12 +43,20 @@ import {
     });
     const chartOptinos = ref({
         responsive:true,
-        maintainAspectRatio: false
+        maintainAspectRatio: false,
+        scales: {
+        y: {
+            min: 0,
+            suggestedMax: 5,
+            ticks: { stepSize: 1 }
+        }
+    }
     })
     const selectProduct = ref('');
     const product = ref([]);
     const loading = ref(true);
     const analytics = ref([]);
+    const charKey = ref(0);
 
 
     const loadProductsFromVendor = async() =>
@@ -84,44 +95,41 @@ import {
     }
 
 }
-const SelectedProduct = async (item) =>
-{
+const SelectedProduct = async (item) => {
     selectProduct.value = item;
-    try
-    {
+    try {
         const response = await fetch(`http://localhost:8080/api/analytics/product/${item.id}`);
-        if(response.ok)
-        {
-            analytics.value = await response.json();
-            console.log("Короче вот: ", analytics.value);
+        if(response.ok) {
+            const data = await response.json();
+            console.log("Данные для графика: ", data);
 
-            const labels = analytics.value.map(stat => stat.monthLabel);
-            const sales = analytics.value.map(stat => stat.salesCount);
-            const reviews = analytics.value.map(stat => stat.reviewsCount);
+            const newLabels = data.map(stat => String(stat.statDate).replace(/-/g, '.'));
+            const newSales = data.map(stat => Number(stat.salesCount));
+            const newReviews = data.map(stat => Number(stat.reviewsCount));
 
-            chartData.value = 
-            ({
-                labels:labels,
-                datasets:
-                [
+            chartData.value = {
+                labels: newLabels,
+                datasets: [
                     {
-                        type:'line',
+                        type: 'line',
                         label: 'Отзывы',
-                        data:reviews,
-                        borderColor: '#00000',
+                        data: newReviews,
+                        borderColor: '#000000',
                         borderWidth: 2,
                         fill: false,
-                        tension: 0.4
+                        tension: 0.4,
+                        pointRadius: 5,
+                        pointBackgroundColor: '#000000'
                     },
                     {
-                        type:'bar',
+                        type: 'bar',
                         label: `Продажи: ${item.brand}`,
-                        data:sales,
+                        data: newSales,
                         backgroundColor: '#e63946',
                         borderRadius: 4
                     }
                 ]
-            });
+            };
         }
         else {
             console.error('Бэкенд не нашел эндпоинт, статус:', response.status);
@@ -129,12 +137,6 @@ const SelectedProduct = async (item) =>
     } catch(error) {
         console.error('Сбой сети:', error);
     }
-    // chartData.value.datasets[0].data = [5, 15, 10, 20];
-    // chartData.value.datasets[1].data = [30, 50, 20, 70];
-    // chartData.value.datasets[1].label = `Продажи: ${item.brand}`;
-
-    // chartData.value = { ...chartData.value };
-   
 }
 onMounted (() =>
 {

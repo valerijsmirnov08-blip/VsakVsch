@@ -6,6 +6,7 @@
     import VendorReviews from '@/components/VendorReviews.vue';
     import VendorFinances from '@/components/VendorFinances.vue';
     import VendorRating from '@/components/VendorRating.vue';
+    import VendorComplaints from '@/components/VendorComplaints.vue';
 
     const currentTab = ref('Главная');
     const currentPage = computed(() => componentMap[currentTab.value]);
@@ -16,6 +17,7 @@
         'Финансы': VendorFinances,
         'Статистика': VendorStatistics,
         'Рейтинги': VendorRating,
+        'Жалобы': VendorComplaints,
         'Отзывы': VendorReviews
     };
 
@@ -26,7 +28,12 @@
     <button @click="currentTab = 'Товары'" :class="{ active: currentTab === 'Товары' }">Товары</button>
     <button @click="currentTab = 'Финансы'" :class="{ active: currentTab === 'Финансы' }">Финансы</button>
     <button @click="currentTab = 'Статистика'" :class="{ active: currentTab === 'Статистика' }">Статистика</button>
-    <button @click="currentTab = 'Рейтинги'" :class="{ active: currentTab === 'Рейтинги' }">Рейтинги</button>
+    <select @change="currentTab = $event.target.value" required  :class="{ active: currentTab === 'Рейтинги' }">
+        <option value=""  disabled selected hidden>Рейтинги</option>
+        <option value = 'Рейтинги'>Рейтинг продавца</option>
+        <option value = 'Жалобы'>Жалобы</option>
+    </select>
+
     <button @click="currentTab = 'Отзывы'" :class="{ active: currentTab === 'Отзывы' }">Отзывы</button>
 </nav>
 <component :is="currentPage"></component>
@@ -36,8 +43,10 @@
 {
     display: flex;
     justify-content: center;
-    gap: 125px;
+    gap: 100px;
     font-size: 40px;
+    margin-bottom: 30px;
+    margin-top: 10px;
 }
 .tabs_menu button
 {
@@ -47,6 +56,16 @@
     border: none;
     cursor: pointer;
     font-size: 16px;
+}
+.tabs_menu select
+{
+    width: 120px;
+    height: 30px;
+    background: none;
+    border: none;
+    cursor: pointer;
+    font-size: 16px;
+    border-color: none;
 }
 .tabs_menu button.active
 {
