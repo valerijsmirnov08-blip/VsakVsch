@@ -104,8 +104,8 @@
                 </nav>
             </div>
         </div>
-        <div class="search_product">
-            <input type="text" placeholder="Название, артикул">
+        <div>
+            <input  class="search_product"   type="text" placeholder="Название, артикул">
         </div>
         <table class="complaints_table">
         <thead>
@@ -149,15 +149,20 @@
 {
     margin: 30px;
 }
-.for_vendor nav
+.date_complaints_for_vendor
+{
+    margin-bottom: 50px;
+}
+.for_vendor
 {
     display: flex;
     justify-content: left;
     margin: 20px;
     align-items: center;
-    gap: 30px;
+    gap: 40px;
     margin-left: 0;
     margin-bottom: 25px;
+    background: none;
 }
 .for_vendor nav .active
 {
@@ -169,6 +174,7 @@
     width: 135px;
     height: 20px;
     border: none;
+    background: none;
     cursor: pointer;
     font-size: 14px;
 }
@@ -184,6 +190,7 @@
     background-color: #f0f0f0;
     font-size: 18px;
     outline: none;
+    margin-bottom: 40px;
 }
 .complaints_table
 {

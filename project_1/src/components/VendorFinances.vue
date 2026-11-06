@@ -7,7 +7,7 @@
     const  invoiceId = ref('');
     const  amount = ref('');
     const  paymentDate = ref('');
-
+    const currentTab = ref('Все счета')
 </script>
 <template>
     <div class="finances_grid">
@@ -15,17 +15,20 @@
         <div class="date_finances">
             <div class="finances">
                 <h2>Выплаты</h2>
-                <select>
-                    <option>Все счета</option>
-                    <option>Не выплаченные</option>
-                    <option>Выплаченные</option>
-                </select>
-            </div>
-            <div class="finance_accaunt">
+                <div class="finance_accaunt">
                 
                 <img src="/Кошелёк.png" alt="Кошелёк">
                 <p>Ваш баланс:   ₽</p>
             </div>
+                <div class="change_finances">
+                    <nav>
+                        <button @click="currentTab = 'Все счета'" :class="{ active: currentTab === 'Все счета' }">Все счета</button>
+                        <button @click="currentTab = 'Не выплаченные'" :class="{ active: currentTab === 'Не выплаченные' }">Не выплаченные</button>
+                        <button @click="currentTab = 'Выплаченные'" :class="{ active: currentTab === 'Выплаченные' }">Выплаченные</button>
+                    </nav>
+                </div>
+            </div>
+            
         </div>
         <table class="payouts_table">
         <thead>
@@ -59,8 +62,33 @@
     .date_finances
     {
         display: flex;
-        justify-content: space-between;
+        flex-direction: column;
         margin: 30px;
+    }
+    .change_finances
+    {
+        display: flex;
+        justify-content: left;
+        margin: 20px;
+        align-items: center;
+        gap: 40px;
+        margin-left: 0;
+        margin-bottom: 25px;
+        background: none;
+    }
+    .change_finances nav .active
+    {
+        border-bottom: 3px solid #FF5B46;
+        font-weight: bold;
+    }
+    .change_finances button
+    {
+        width: 135px;
+        height: 20px;
+        border: none;
+        background: none;
+        cursor: pointer;
+        font-size: 14px;
     }
     .date_finances select
     {
@@ -77,7 +105,6 @@
     .finance_accaunt
     {
         display: flex;
-        justify-content: space-between;
         align-items: center;
         gap: 20px;
         font-size: 20px;
