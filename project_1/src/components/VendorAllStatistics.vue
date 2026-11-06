@@ -144,18 +144,37 @@ onMounted (() =>
 
 <template>
 <div class="statistics_grid">
-        <div  class="products_statistics">
-            <div v-for="item in product " :key="item.id" class="statistics_card" @click="SelectedProduct(item)">
-                <img :src="item.mainImage" alt="" >
-                <p>{{ item.brand }}</p>
-                <p>{{ item.rating }} ⭐</p>
-            </div>
-        </div>
         <div class="statistics_graph">
             <div class="chart_container">
                 <Bar :data="chartData" :options="chartOptinos" />
             </div>
         </div>
+        <div class="vendor_main">
+                <div class="vendor_main_info">
+                    <details open class="vendor_table_info">
+                        <summary>Рейтинг продавца</summary>
+                        <ul>
+                            <li value="">Доставка без опозданий 84% </li>
+                            <li value="">Оценка доставки 94%</li>
+                            <li value="">Оценка товара 4.5</li>
+                            <li value="">Отменённые товары 10%</li>
+                        </ul>
+                       
+                    </details>
+                </div>
+                <div class="vendor_main_info">
+                    <details open class="vendor_table_info">
+                        <summary>Комуникация</summary>
+                        <ul>
+                            <li value="">Отзывы <p> 243</p></li>
+                            <li value="">Сообщения <p>10</p></li>
+                            <li value="">Вопросы <p>3</p></li>
+                        </ul>
+                        
+                        
+                    </details>
+                </div>
+            </div>
     </div>
 </template>
 
@@ -163,65 +182,10 @@ onMounted (() =>
 .statistics_grid
 {
     display: grid;
-    grid-template-columns: 30% 70%;
+    grid-template-columns: 60% 40%;
     height: 80vh;
     gap: 20px;
     overflow: hidden;
-}
-.products_statistics
-{
-    display: flex;
-    flex-direction: column;
-    gap: 15px;
-    height: 50%;
-    overflow-y: auto;
-    padding-right: 10px;
-}
-.products_statistics::-webkit-scrollbar
-{
-    width: 6px;
-}
-.products_statistics::-webkit-scrollbar-thumb
-{
-    background-color: #ff7e5f;
-    border-radius: 10px;
-}
-.statistics_card
-{
-    display: flex;
-    flex-direction: column;
-    gap: 10px;
-    padding: 20px;
-    font-size: 20px;
-    font-family: 'Courier New';
-    border-radius: 20px;
-    border: 2px solid #000;
-    max-height: 250px;
-    max-width: 250px;    
-    flex-shrink: 0;
-    align-items: center;
-}
-.statistics_card:hover
-{
-    cursor: pointer;
-}
-.statistics_card img
-{
-    width: 150px;
-}
-.statistics_graph
-{
-    height: 100%;
-    padding: 20px;
-    border-radius: 20px;
-    border: 2px dashed #ccc;
-
-}
-.chart_container
-{
-    position: relative;
-    height: 100%;
-    width: 100%;
 }
 .statistics_graph
 {
@@ -232,5 +196,56 @@ onMounted (() =>
     box-sizing: border-box;
     min-height: 0;
     min-width: 0;
+}
+.vendor_main
+{
+    display: flex;
+    flex-direction: column;
+    padding: 20px;
+    margin: 20px;
+    width: 100%;
+    gap: 30px;
+}
+.vendor_main_info
+{
+    display: flex;
+    width: 400px;
+    font-weight: 400;
+    font-size: 20px;
+    gap: 20px;
+
+}
+.vendor_main_info li
+{
+    text-decoration: none;
+    list-style-type: none;
+    gap: 20px;
+    font-size: 25px;
+    display: inline-block;
+}
+.vendor_table_info
+{
+
+}
+.vendor_table_info ul
+{
+    display: flex;
+    flex-direction: column;
+    justify-content: left;
+    gap: 20px;
+}
+.vendor_table_info ul p
+{
+    text-align: center;
+    width: 70px;
+    display: inline-block;
+    background-color: #ff7e5f;
+    border-radius: 40px;
+}
+.vendor_table_info summary
+{
+    margin-bottom: 20px;
+    font-size: 30px;
+    font-weight: bold;
 }
 </style>

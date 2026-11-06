@@ -286,6 +286,7 @@ const filteredOrders = computed(() =>
 .orders
 {
     display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(400px, 1fr));
 }
 .orders_card
 {

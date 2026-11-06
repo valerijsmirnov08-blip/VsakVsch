@@ -112,8 +112,8 @@ import {computed, onMounted, ref} from 'vue';
                 </nav>
             </div>
         </div>
-        <div class="search_product">
-            <input type="text" placeholder="Название, артикул">
+        <div >
+            <input class="search_product" type="text" placeholder="Название, артикул">
         </div>
         <table class="reviews_table">
         <thead>
@@ -153,8 +153,24 @@ import {computed, onMounted, ref} from 'vue';
 .reviews_grid
 {
     margin: 30px;
+    padding: 20px;
 }
-.for_vendor nav
+.date_reviews_for_vendor
+{
+    margin-bottom: 50px;
+}
+.for_vendor
+{
+    display: flex;
+    justify-content: left;
+    margin: 20px;
+    align-items: center;
+    gap: 40px;
+    margin-left: 0;
+    margin-bottom: 25px;
+    background: none;
+}
+/* .for_vendor nav
 {
     display: flex;
     justify-content: left;
@@ -163,7 +179,9 @@ import {computed, onMounted, ref} from 'vue';
     gap: 30px;
     margin-left: 0;
     margin-bottom: 25px;
-}
+    background: none;
+    background-color: #ffff;
+} */
 .for_vendor nav .active
 {
     border-bottom: 3px solid #FF5B46;
@@ -174,6 +192,7 @@ import {computed, onMounted, ref} from 'vue';
     width: 135px;
     height: 20px;
     border: none;
+    background: none;
     cursor: pointer;
     font-size: 14px;
 }
@@ -189,6 +208,7 @@ import {computed, onMounted, ref} from 'vue';
     background-color: #f0f0f0;
     font-size: 18px;
     outline: none;
+    margin-bottom: 40px;
 }
 .reviews_table
 {

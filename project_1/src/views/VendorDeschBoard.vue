@@ -7,13 +7,15 @@
     import VendorFinances from '@/components/VendorFinances.vue';
     import VendorRating from '@/components/VendorRating.vue';
     import VendorComplaints from '@/components/VendorComplaints.vue';
+    import VendorCreateProduct from '@/components/VendorCreateProduct.vue';
 
     const currentTab = ref('Главная');
     const currentPage = computed(() => componentMap[currentTab.value]);
     const componentMap =
     {
         'Главная': VendorAllStatistics,
-        'Товары': VendorWarehouse,
+        'Склад': VendorWarehouse,
+        'Создать новый товар': VendorCreateProduct,
         'Финансы': VendorFinances,
         'Статистика': VendorStatistics,
         'Рейтинги': VendorRating,
@@ -25,7 +27,11 @@
 <template>
 <nav class="tabs_menu">
     <button @click="currentTab = 'Главная'" :class="{ active: currentTab === 'Главная' }">Главная</button>
-    <button @click="currentTab = 'Товары'" :class="{ active: currentTab === 'Товары' }">Товары</button>
+    <select @change="currentTab = $event.target.value" required  :class="{ active: currentTab === 'Товары' }">
+        <option value=""  disabled selected hidden>Товары</option>
+        <option value = 'Склад'>Склад</option>
+        <option value = 'Создать новый товар'>Создать новый товар</option>
+    </select>
     <button @click="currentTab = 'Финансы'" :class="{ active: currentTab === 'Финансы' }">Финансы</button>
     <button @click="currentTab = 'Статистика'" :class="{ active: currentTab === 'Статистика' }">Статистика</button>
     <select @change="currentTab = $event.target.value" required  :class="{ active: currentTab === 'Рейтинги' }">

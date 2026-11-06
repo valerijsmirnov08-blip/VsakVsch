@@ -145,7 +145,8 @@
                     ({
                         shopName: editShopName.value.trim(),
                         shopDescription: editShopDesc.value.trim(),
-                        userName: editName.value.trim()
+                        userName: editName.value.trim(),
+                        brandName: editBrandName.value.trim()
                     })
 
                 })
