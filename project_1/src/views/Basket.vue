@@ -207,7 +207,7 @@ onMounted(() =>
         </div>
         <div v-else class="cart_items_list">
             <div v-for="item in cartItems" :key="item.id" class="dynamic_cart_item">
-                <img :src="item.product.mainImage" :alt="item.product.model" class="item_img" />
+                <img :src="'/' + item.product.details?.mainImage" :alt="item.product.model" class="item_img" />
                 <div class="item_details">
                     <span class="item_brand">{{ item.product.brand }}</span>
                     <h3 class="item_model">{{ item.product.model }}</h3>

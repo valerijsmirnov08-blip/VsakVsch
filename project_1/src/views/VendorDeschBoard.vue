@@ -8,6 +8,7 @@
     import VendorRating from '@/components/VendorRating.vue';
     import VendorComplaints from '@/components/VendorComplaints.vue';
     import VendorCreateProduct from '@/components/VendorCreateProduct.vue';
+import VendorEditProduct from '@/components/VendorEditProduct.vue';
 
     const currentTab = ref('Главная');
     const currentPage = computed(() => componentMap[currentTab.value]);
@@ -16,6 +17,7 @@
         'Главная': VendorAllStatistics,
         'Склад': VendorWarehouse,
         'Создать новый товар': VendorCreateProduct,
+        'Редактировать': VendorEditProduct,
         'Финансы': VendorFinances,
         'Статистика': VendorStatistics,
         'Рейтинги': VendorRating,

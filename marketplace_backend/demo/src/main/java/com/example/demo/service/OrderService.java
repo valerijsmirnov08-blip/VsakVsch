@@ -49,35 +49,28 @@ public class OrderService
     @Transactional
     public Orders createOrder(Long userId)
     {
-        // public List<OrdersVendorDTO> getAllOrders()
-        // {
-        //     return orderItemRepository.findAll().stream()
-        //     .map(order -> new OrdersVendorDTO(order))
-        //     .toList();
-        // }
-       
-
-
-
         List<CartItem> cartItems = cartRepository.findByUserId(userId);
         if(cartItems.isEmpty())
         {
             throw new RuntimeException("Корзина пуста, невозможно оформить заказ!");
         }
         BigDecimal totalSum = BigDecimal.ZERO;
-        for (CartItem item : cartItems)
+        for(CartItem item : cartItems)
         {
             Product product = item.getProduct();
             if(product.getQuantity() < item.getQuantity())
             {
                 throw new RuntimeException("Ошибка склада");
             }
-            int newQuntity = product.getQuantity() - item.getQuantity();
-            product.setQuantity(newQuntity);
+            int newQuantity = product.getQuantity() - item.getQuantity();
+            product.setQuantity(newQuantity);
+            if (product.getRating() == null)
+            {
+                product.setRating(0.0);
+            }
             productRepository.save(product);
 
             BigDecimal itemTotal = product.getPrice().multiply(BigDecimal.valueOf(item.getQuantity()));
-            
             totalSum = totalSum.add(itemTotal);
         }
         Orders order = new Orders();
@@ -85,60 +78,22 @@ public class OrderService
         order.setTotalPrice(totalSum);
         order.setStatus("В процессе");
         order.setCreatedAt(java.time.LocalDateTime.now());
+        Orders saveOreder = ordersRepository.save(order);
 
-        Orders saveOrder = ordersRepository.save(order);
-        java.time.LocalDate currentMonth = java.time.LocalDate.now();
-        for(CartItem item : cartItems)
+        for(CartItem item: cartItems)
         {
             Product product = item.getProduct();
             OrderItem orderItem = new OrderItem();
-            orderItem.setOrder(saveOrder);
+            orderItem.setOrder(saveOreder);
             orderItem.setProduct(product);
-            orderItem.setVendorId(product.getVendorId());
+            orderItem.setVendorId(product.getVendor().getId());
             orderItem.setPrice(product.getPrice());
             orderItem.setQuantity(item.getQuantity());
             orderItem.setStatus("В процессе");
 
-            orderItemRepository.save(orderItem);    
-
-            // Optional<ProductMonthlyStat> productMonthlyStats = productMonthlyStatRepository.findByProductIdAndMonthLabel(product.getId(), currentMonth);
-            // if(productMonthlyStats.isPresent())
-            // {
-            //     ProductMonthlyStat stat = productMonthlyStats.get();
-
-            //     Integer a =  stat.getSalesCount() + item.getQuantity();
-
-            //     stat.setSalesCount(a);
-
-            //     productMonthlyStatRepository.save(stat);
-            // }
-            // else
-            // {
-            //     ProductMonthlyStat newStat = new ProductMonthlyStat();
-            //     newStat.setProductId(product.getId());
-            //     newStat.setMonthLabel(currentMonth);
-            //     newStat.setSalesCount(item.getQuantity());
-
-            //     productMonthlyStatRepository.save(newStat);
-            // }
-
-            int updatedRows =  productMonthlyStatRepository.incrementSalesCount(product.getId(), currentMonth, item.getQuantity());
-            if(updatedRows == 0)
-            {
-                ProductMonthlyStat newStat = new ProductMonthlyStat();
-                newStat.setProductId(product.getId());
-                newStat.setStatDate(currentMonth);
-                newStat.setSalesCount(item.getQuantity()); 
-
-                productMonthlyStatRepository.save(newStat);
-            }
+            orderItemRepository.save(orderItem);
         }
-            
-            cartRepository.deleteAll(cartItems);
-            return saveOrder;
-        }
-        
-        
-       
- 
+        cartRepository.deleteAll(cartItems);
+        return saveOreder;
+    }
     }

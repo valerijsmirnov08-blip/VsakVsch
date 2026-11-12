@@ -24,6 +24,7 @@ public class ProductController
     @Autowired 
     private ProductService productService;
 
+
     @GetMapping
     public Page<ProductCatalogDto> getProductsPage
     (   @RequestParam (defaultValue = "0") int page,
@@ -63,12 +64,15 @@ public class ProductController
         Optional<Product> productOpt = productRepository.findById(id);
         Product exisitingProduct = productOpt.get();
         exisitingProduct.setBrand(updatedData.getBrand());
-        exisitingProduct.setModel(updatedData.getModel());
         exisitingProduct.setQuantity(updatedData.getQuantity());
+        exisitingProduct.setPrice(updatedData.getPrice()); 
+        exisitingProduct.setModel(updatedData.getModel());
         exisitingProduct.setDescription(updatedData.getDescription());
         exisitingProduct.setWarranty(updatedData.getWarranty());
-        exisitingProduct.setEstimatedDelivery(updatedData.getEstimatedDelivery());
-        exisitingProduct.setPrice(updatedData.getPrice()); 
+        if (updatedData.getDetails() != null)
+        {
+            exisitingProduct.setDetails(updatedData.getDetails());
+        }
         productRepository.save(exisitingProduct);
         return  ResponseEntity.ok("Товар успешно обнавлён");
     }
@@ -76,7 +80,7 @@ public class ProductController
     @PostMapping ("/create")
     public ResponseEntity<?> createProduct(@RequestBody Product newProduct)
     {
-        if(newProduct.getVendorId() == null || newProduct.getVendorSku() == null)
+        if(newProduct.getVendor() == null || newProduct.getCategory() == null)
         {
             return ResponseEntity.badRequest().body("Ошибка: заполните все поля");
         }
@@ -86,9 +90,9 @@ public class ProductController
     @GetMapping ("/vendor/{vendorId}")
     public List<Product> findByVendorId(@PathVariable Long vendorId)
     {
-        return productRepository.findByVendorId(vendorId);
+        return productRepository.findByVendor_Id(vendorId);
     }
-   @GetMapping("/search")
+    @GetMapping("/search")
     public ResponseEntity<List<Product>> searchProducts
     (
         @RequestParam String searchText,

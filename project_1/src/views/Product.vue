@@ -28,7 +28,7 @@
             product.value = await response.json();
             if(product.value)
             {
-                activeImage.value = product.value.mainImage;
+                activeImage.value = product.value.details?.mainImage || '';
             }
             const session = localStorage.getItem('user_session');
             if(session)
@@ -53,31 +53,22 @@
             loading.value = false;
         }
     }) 
-    const parsedGallery = computed(() =>
-    {
-        if(!product.value) return[];
-        if(typeof product.value.gallery === 'string' && product.value.gallery.trim() !== '')
-        {
-            return product.value.gallery.split(',').map(url => url.trim());
-        }
-        return[product.value.mainImage];
-    });
 
 
     const galleryImages = computed(() =>
     {
-        if(!product.value)
+        if(!product.value || !product.value.details)
         {
             return [];
         }
-         const images = [];
-        if(product.value.mainImage)
+        const images = [];
+        if(product.value.details.mainImage)
         {
-            images.push(product.value.mainImage);
+            images.push(product.value.details.mainImage);
         }
-        if(product.value.gallery)
+        if(typeof product.value.details.gallery === 'string' && product.value.details.gallery.trim() !== '')
         {
-            const extra = product.value.gallery.split(',');
+            const extra = product.value.details.gallery.split(',').map(url => url.trim());
             images.push(...extra);
         }
         return images;
@@ -173,7 +164,7 @@
                 <li v-for="(imgUrl, index) in galleryImages" :key="index">
                     <img
                     class="mini_img"
-                    :src="imgUrl"
+                    :src= "'/' + imgUrl"
                     :class="{active_preview: activeImage === imgUrl}"
                     alt="Превью"
                     @click="activeImage = imgUrl">
@@ -182,7 +173,7 @@
         </div>
         
         <div class="big_photo">
-            <img id="main_photo" :src="activeImage" alt="Большое фото">
+            <img id="main_photo" :src="'/' + activeImage" alt="Большое фото">
         </div>
         
         <div class="description">
@@ -197,7 +188,7 @@
             <details class="product_description">
                 <summary>Описание</summary>
                 <div class="description_content">
-                    <p>{{ product.description || "Описание отсутствует"}}</p>
+                    <p>{{ product.details?.description || "Описание отсутствует"}}</p>
                 </div>
             </details>
         </div>
@@ -389,5 +380,14 @@
     color: #f3ef03;
     margin-right: 4px;
     font-size: 18px;
+}
+.active_preview {
+    border: 2px solid #ff7e5f;
+    border-radius: 4px;
+    box-sizing: border-box;
+}
+.mini_img {
+    cursor: pointer;
+    transition: border 0.2s;
 }
 </style>

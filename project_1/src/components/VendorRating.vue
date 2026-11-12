@@ -129,11 +129,6 @@ const SelectedProduct = async (item) =>
     } catch(error) {
         console.error('Сбой сети:', error);
     }
-    // chartData.value.datasets[0].data = [5, 15, 10, 20];
-    // chartData.value.datasets[1].data = [30, 50, 20, 70];
-    // chartData.value.datasets[1].label = `Продажи: ${item.brand}`;
-
-    // chartData.value = { ...chartData.value };
    
 }
 onMounted (() =>

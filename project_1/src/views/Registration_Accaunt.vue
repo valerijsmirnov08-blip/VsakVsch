@@ -6,8 +6,11 @@ const router = useRouter();
 
 const userName = ref('');
 const email = ref('');
+const phone = ref('');
 const password = ref('');
 const passwordConfirm = ref('');
+
+
 const errorMessage = ref('');
 const successMessage = ref('');
 
@@ -27,7 +30,8 @@ const handleRegister = async () => {
             body: JSON.stringify({
                 user_name: userName.value,
                 email: email.value,
-                password: password.value
+                password: password.value,
+                phone: phone.value
             })
         });
 
@@ -59,6 +63,7 @@ const handleRegister = async () => {
     <form @submit.prevent="handleRegister" class="form">
         <input v-model="userName" class="input_name" type="text" placeholder="Введите своё имя">
         <input v-model="email" class="input_email" type="email" placeholder="Введите email">
+        <input v-model="phone" class="input_name" type="tel" placeholder="Введите номер телефона">
         <input v-model="password" class="input_password" type="password" placeholder="Введите пароль">
         <input v-model="passwordConfirm" class="input_password" type="password" placeholder="Введите пароль повторно">
         <p v-if="errorMessage" style="color: red; font-size: 14px; text-align: center; margin: 5px 0;">{{ errorMessage }}</p>

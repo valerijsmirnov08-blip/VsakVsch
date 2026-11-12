@@ -180,7 +180,7 @@ const toggleFavorite = async (productId) =>
                     </el-button>
                 </div> 
               <div class="image-wrapper">
-                    <img :src="product.mainImage" :alt="product.model" />
+                    <img :src="product.image" :alt="product.model" />
                 </div>
                 <div class="product-info">
                     <span class="brand">{{ product.brand }}</span>

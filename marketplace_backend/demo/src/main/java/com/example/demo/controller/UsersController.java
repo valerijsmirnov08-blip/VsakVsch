@@ -1,7 +1,9 @@
 package com.example.demo.controller;
 import com.example.demo.entity.Users;
+import com.example.demo.entity.VendorProfile;
 import com.example.demo.repository.UsersRepository;
-
+import com.example.demo.repository.VendorProfileRepository;
+import com.example.demo.entity.Role;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -14,7 +16,11 @@ import java.util.Optional;
 public class UsersController
 {
     @Autowired 
-    private UsersRepository usersRepository;   
+    private UsersRepository usersRepository;  
+    
+    @Autowired 
+    private VendorProfileRepository vendorProfileRepository;
+
     @PostMapping("/users/login")
     public ResponseEntity<?> loginUser(@RequestBody Map<String, String> body)
     {
@@ -62,7 +68,10 @@ public class UsersController
         newUser.setUserName(name.trim());
         newUser.setEmail(email.trim());
         newUser.setPassword(password);
-        newUser.setIsVendor(false);
+        newUser.setPhone(body.get("phone"));
+        newUser.setRole(Role.CUSTOMER);
+        newUser.setIsBanned(false);
+        newUser.setHired(System.currentTimeMillis());
 
         try {
             Users savedUser = usersRepository.save(newUser);
@@ -87,13 +96,22 @@ public class UsersController
         if(userOpt.isPresent())
         {
             Users user = userOpt.get();
-            user.setIsVendor(true);
-            user.setShopName(shopName);
-            user.setShopDescription(shopDescription);
-            user.setBrandName(brandName);
+            user.setRole(Role.VENDOR);
             Users updatedUser = usersRepository.save(user);
             updatedUser.setPassword(null);
-            return ResponseEntity.ok(updatedUser);
+
+            VendorProfile vendor = new VendorProfile();
+                vendor.setBrandName(brandName);
+                vendor.setShopName(shopName);
+                vendor.setInn(brandName);
+                vendor.setLegalAddress(brandName);
+                vendor.setShopDesc(shopDescription);
+                vendor.setVendor(user);
+
+                vendorProfileRepository.save(vendor);
+
+            return  ResponseEntity.ok(updatedUser);
+            
         }
         return  ResponseEntity.notFound().build();
     }
@@ -112,15 +130,20 @@ public class UsersController
             Users user = userOpt.get();
             user.setUserName(userName);
            
-            if(user.getIsVendor() != null && user.getIsVendor())
+            if (user.getRole() == Role.VENDOR)
             {
-               
                 if(shopName == null || shopName.trim().isEmpty())
                 {
                     return ResponseEntity.badRequest().body("{\"message\": \"Название магазина не может быть пустым!\"}");
                 }
-                user.setShopName(shopName);
-                user.setShopDescription(shopDescription);
+                Optional<VendorProfile> profileOpt = vendorProfileRepository.findByVendor(user);
+                if(profileOpt.isPresent())
+                {
+                    VendorProfile profile = profileOpt.get();
+                    profile.setShopName(shopName);
+                    profile.setShopDesc(shopDescription);
+                    vendorProfileRepository.save(profile); 
+                }
             }
             Users updateProfile = usersRepository.save(user);
             return ResponseEntity.ok(updateProfile);
@@ -132,9 +155,7 @@ public class UsersController
         Optional<Users> userOpt = usersRepository.findById(id);
         if (userOpt.isPresent()) {
             Users user = userOpt.get();
-            user.setIsVendor(false);
-            user.setShopName(null);
-            user.setShopDescription(null);
+            user.setRole(Role.CUSTOMER);
             
             Users updatedUser = usersRepository.save(user);
             updatedUser.setPassword(null);

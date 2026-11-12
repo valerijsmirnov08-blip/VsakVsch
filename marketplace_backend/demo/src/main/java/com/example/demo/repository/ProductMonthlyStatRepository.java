@@ -24,7 +24,7 @@ public interface ProductMonthlyStatRepository extends JpaRepository<ProductMonth
    @Query("UPDATE ProductMonthlyStat a SET a.reviewsCount = a.reviewsCount + 1 WHERE a.productId = :productId AND a.statDate = :statDate")
    int incrementReviewsCount(@Param("productId") Long productId, @Param("statDate") LocalDate statDate);
    
-   @Query("SELECT s FROM ProductMonthlyStat s WHERE s.statDate >= :startDate AND s.productId IN (SELECT p.id FROM Product p WHERE p.vendorId = :vendorId)") 
+   @Query("SELECT s FROM ProductMonthlyStat s WHERE s.statDate >= :startDate AND s.productId IN (SELECT p.id FROM Product p WHERE p.vendor.id = :vendorId)") 
    List<ProductMonthlyStat> findStatsByVendorAndDate(@Param ("vendorId") Long vendorId, @Param("startDate") LocalDate startDate );
 
    List<ProductMonthlyStat> findByProductIdOrderByStatDateAsc(Long productId);

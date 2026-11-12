@@ -182,7 +182,7 @@ const filteredOrders = computed(() =>
         <div v-else class="orders">
             <div v-for="item in filteredOrders" :key="item.id" class="orders_card">
             <div class="">
-                 <img class="main_img" :src="item.product?.mainImage" alt="">
+                 <img class="main_img" :src="'/' + item.product.details?.mainImage" alt="">
             </div>
             <div class="orders_card_post_info">
                 <p>Срок доставки: {{ item.product?.estimatedDelivery }}</p>
@@ -202,7 +202,7 @@ const filteredOrders = computed(() =>
             <div class="modal_review_wrapper" @click.stop>
             <div class="modal_review_window">
                 <h3 style="font-size: 40px;">Оценить товар</h3>
-                <img class="modal_review_window_img" :src="selectedProduct.mainImage" alt="">
+                <img class="modal_review_window_img" :src="'/' + selectedProduct?.details.mainImage" alt="">
                 <div class="modal_review_window_important_info">
                     <p>{{ selectedProduct?.brand }} </p>
                     <p>{{ selectedProduct?.model }}</p>

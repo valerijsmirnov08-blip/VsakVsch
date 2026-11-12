@@ -82,17 +82,6 @@ public class ReviewService
         Product product = productRepository.findById(productId)
         .orElseThrow(() -> new RuntimeException("Товар не найден"));
 
-        if(avg != null)
-        {
-            double roundedRating = BigDecimal.valueOf(avg)
-                    .setScale(1, RoundingMode.HALF_UP)
-                    .doubleValue();
-            product.setRating(roundedRating);
-        }
-        else
-        {
-            product.setRating(0.0);
-        }
         productRepository.save(product);
 
 

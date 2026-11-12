@@ -14,51 +14,89 @@ import {
     LineElement,
     PointElement,
     LineController,
-    BarController} from 'chart.js';
-    ChartJS.register(Title, Tooltip, Legend, BarElement, CategoryScale, LineElement, LinearScale,LineController, PointElement, BarController)
+    BarController,
+    scales} from 'chart.js';
+    ChartJS.register
+    (
+        Title, Tooltip, Legend, BarElement, CategoryScale, LineElement, LinearScale,LineController, PointElement, BarController  
+    )
 
-    const chartData = ref
-    ({
-        labels:['Январь', 'Февраль', 'Март', 'Апрель'],
-        datasets:
-        [
+    const chartData = ref({
+    labels: ['Январь', 'Февраль', 'Март', 'Апрель'],
+    datasets: [
+        {
+            type: 'line',
+            label: 'Отзывы',
+            data: [10, 25, 15, 35],
+            borderColor: '#333333',
+            borderWidth: 3,
+            fill: false,
+            tension: 0.4,
+            pointRadius: 5,
+            pointBackgroundColor: '#ffffff',
+            pointBorderColor: '#333333',
+            pointBorderWidth: 2
+        },
+        {
+            type: 'bar',
+            label: 'Продажи',
+            data: [12, 45, 23, 60],
+            backgroundColor: '#ff7e5f',
+            borderRadius: 4,
+            barPercentage: 0.6
+        }
+    ]
+});
+const chartOptinos = ref
+({
+    scales:
+    {
+        x:
+        {
+            grid:
             {
-                type:'line',
-                label: 'Отзывы',
-                data:[10, 25, 15, 35],
-                borderColor: '#000000',
-                borderWidth: 2,
-                fill: false,
-                tension: 0.4,
-                pointRadius: 5,           
-                pointBackgroundColor: '#000000'
-            },
-            {
-                label: 'Продажи',
-                data:[50,80,40,90],
-                backgroundColor: '#e63946',
-                borderRadius: 4
+                display:false
             }
-        ]
-    });
-    const chartOptinos = ref({
-        responsive:true,
-        maintainAspectRatio: false,
-        scales: {
-        y: {
-            min: 0,
-            suggestedMax: 5,
-            ticks: { stepSize: 1 }
         }
     }
-    })
-    const selectProduct = ref('');
+})
+const fakeBakend =
+    {
+        'Неделя': {labels: ['Пн', 'Вт', 'Ср', 'Чт', 'Пт', 'Сб', 'Вс'], data: [12, 19, 3, 45, 12, 78, 1]},
+        '2 недели': {labels: ['1', '2', '3', '4', '5', '6', '7', '8', '9', '10', '11', '12', '13', '14'], data: [12, 18, 15, 25, 22, 30, 28, 14, 20, 19, 35, 32, 40, 38]},
+        'Месяц':{labels: ['Неделя 1','Неделя 2','Неделя 3','Неделя 4'], data: [12, 19, 3, 45]},
+        'Год': {labels: ['Янв', 'Фев', 'Мар', 'Апр', 'Май', 'Июн', 'Июл', 'Авг', 'Сен', 'Окт', 'Ноя', 'Дек'], data: [113, 142, 1222, 418, 1, 1132, 122, 13, 122, 1333, 128, 1]}
+    }
+
+const updateChartData = (labels, reviews, sales, brandName) => {
+    chartData.value = {
+        labels: labels,
+        datasets: [
+            {
+                type: 'line',
+                label: 'Отзывы',
+                data: reviews,
+                borderColor: '#333333', 
+                borderWidth: 3,
+                fill: false,
+                tension: 0.4,
+                pointRadius: 5,
+                pointBackgroundColor: '#ffffff',
+                pointBorderColor: '#333333',
+                pointBorderWidth: 2
+            },
+            {
+                type: 'bar',
+                label: `Продажи: ${brandName}`,
+                data: sales,
+                backgroundColor: '#ff7e5f', 
+                borderRadius: 4,
+                barPercentage: 0.6
+            }
+        ]
+    };
+};
     const product = ref([]);
-    const loading = ref(true);
-    const analytics = ref([]);
-    const charKey = ref(0);
-
-
     const loadProductsFromVendor = async() =>
 {
     const session = localStorage.getItem('user_session');
@@ -68,9 +106,7 @@ import {
         return;
         
     }
-    const user = JSON.parse(session);
-    
-    const vendorId = user.id;
+    const vendorId = JSON.parse(session);
     try
     {
         const response = await fetch(`http://localhost:8080/api/products/vendor/${vendorId}`);
@@ -81,20 +117,27 @@ import {
         }
         else 
             {
-                console.error('Сервер ответил ошибкой HTTP:', response.status);
+                throw new Error(`Ошибка HTTP: ${response.status}`);
             }
         
     }
     catch (error) 
     {
         console.error('Ошибка связи с сервером Java:', error);
+        product.value =
+        [
+            { id: 101, brand: 'Игровое кресло', rating: 4.8, weeklySales: 124, mainImage: '...' },
+            { id: 102, brand: 'Механическая клавиатура', rating: 4.9, weeklySales: 89, mainImage: '...' },
+        ];
     }
+    
     finally
     {
         loading.value = false;
     }
 
 }
+const selectProduct = ref([]);
 const SelectedProduct = async (item) => {
     selectProduct.value = item;
     try {
@@ -114,7 +157,7 @@ const SelectedProduct = async (item) => {
                         type: 'line',
                         label: 'Отзывы',
                         data: newReviews,
-                        borderColor: '#000000',
+                        borderColor: '#333333',
                         borderWidth: 2,
                         fill: false,
                         tension: 0.4,
@@ -125,7 +168,7 @@ const SelectedProduct = async (item) => {
                         type: 'bar',
                         label: `Продажи: ${item.brand}`,
                         data: newSales,
-                        backgroundColor: '#e63946',
+                        backgroundColor: '#ff7e5f',
                         borderRadius: 4
                     }
                 ]
@@ -148,14 +191,22 @@ onMounted (() =>
 <div class="statistics_grid">
         <div  class="products_statistics">
             <div v-for="item in product " :key="item.id" class="statistics_card" @click="SelectedProduct(item)">
-                <img :src="item.mainImage" alt="" >
-                <p>{{ item.brand }}</p>
-                <p>{{ item.rating }} ⭐</p>
+                <div class="card_img_wrap">
+                    <img :src="item.mainImage" alt="" >
+                </div>
+                <div class="card_info">
+                    <span class="card_id">Арт. {{ item.id }}</span>
+                    <p class="card_brand">{{ item.brand }}</p>
+                    <div class="card_stats">
+                        <span class="card_rating">⭐ {{ item.rating }}</span>
+                        <span class="card_sales">📈 {{ item.weeklySales }} шт/нед</span>
+                    </div>
+                </div>
             </div>
         </div>
         <div class="statistics_graph">
             <div class="chart_container">
-                <Bar :data="chartData" :options="chartOptinos" />
+                <Bar :data="chartData" :options="chartOptinos"/>
             </div>
         </div>
     </div>
@@ -165,7 +216,7 @@ onMounted (() =>
 .statistics_grid
 {
     display: grid;
-    grid-template-columns: 30% 70%;
+    grid-template-columns: 40% 60%;
     height: 80vh;
     gap: 20px;
     overflow: hidden;
@@ -191,39 +242,93 @@ onMounted (() =>
 .statistics_card
 {
     display: flex;
-    flex-direction: column;
-    gap: 10px;
+    flex-direction: row;
+    align-items: center;
+    gap: 20px;
     padding: 20px;
     font-size: 20px;
     font-family: 'Courier New';
     border-radius: 20px;
-    border: 2px solid #000;
+    border: 1px solid #eaeaea;
     max-height: 250px;
     max-width: 250px;    
     flex-shrink: 0;
-    align-items: center;
+    cursor: pointer;
 }
 .statistics_card:hover
 {
-    cursor: pointer;
+    border-color: #ff7e5f;
+    box-shadow: 0 4px 12px rgba(255, 126, 95, 0.1);
 }
-.statistics_card img
+.card_img_wrap
 {
-    width: 150px;
+    width: 85px;
+    height: 85px;
+    border-radius: 8px;
+    overflow: hidden;
+    flex-shrink: 0;
+    background-color: #f9f9f9;
 }
-.statistics_graph
+.card_img_wrap img
 {
-    height: 100%;
-    padding: 20px;
-    border-radius: 20px;
-    border: 2px dashed #ccc;
-
-}
-.chart_container
-{
-    position: relative;
-    height: 100%;
     width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+.card_info
+{
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+}
+.card_info p
+{
+    margin: 0;
+}
+.card_brand
+{
+    font-size: 18px;
+    font-weight: 600;
+    color: #333;
+}
+.card_id
+{
+    font-size: 12px;
+    color: #999;
+    text-transform: uppercase;
+}
+
+.card_brand
+{
+    font-size: 16px;
+    font-weight: 700;
+    color: #222;
+    margin-top: 2px;
+    margin-bottom: 8px;
+}
+
+.card_stats
+{
+    display: flex;
+    gap: 15px;
+    align-items: center;
+}
+
+.card_rating
+{
+    font-size: 14px;
+    font-weight: 600;
+    color: #ffb400;
+}
+
+.card_sales
+{
+    font-size: 13px;
+    font-weight: 500;
+    color: #2e7d32;
+    background-color: #e8f5e9;
+    padding: 2px 6px;
+    border-radius: 6px;
 }
 .statistics_graph
 {

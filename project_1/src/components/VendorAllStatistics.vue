@@ -1,152 +1,190 @@
 <script setup>
 import { ref } from 'vue';
-import { Bar } from 'vue-chartjs';
+import { Line } from 'vue-chartjs';
 import { useRoute } from 'vue-router';
 import { onMounted } from 'vue';
-import {
-    Chart as ChartJS,
+import 
+{
+   Chart as ChartJS,
+   Title,
+   Tooltip,
+   Legend,
+   LineElement,
+   PointElement,
+   CategoryScale,
+   LinearScale,
+   Filler,
+} from 'chart.js';
+ChartJS.register
+(
     Title,
     Tooltip,
     Legend,
-    BarElement,
+    LineElement,
+    PointElement,
     CategoryScale,
     LinearScale,
-    LineElement,
-    PointElement} from 'chart.js';
-    ChartJS.register(Title, Tooltip, Legend, BarElement, CategoryScale, LineElement, LinearScale, PointElement)
-
-    const chartData = ref
-    ({
-        labels:['Январь', 'Февраль', 'Март', 'Апрель'],
-        datasets:
-        [
+    Filler
+)
+const chartData = ref
+({
+    labels: ['Январь', 'Февраль', 'Март', 'Апрель'],
+    datasets: 
+    [{
+        type: 'line',
+        data: [10,25,15,35],
+        borderColor: '#ff7e5f',
+        fill: true,
+        tension: 0.4,
+        label: 'Заказы',
+        pointBackgroundColor: '#ffffff',
+        pointBorderColor: '#ff7e5f',
+        pointBorderWidth: 3,
+        pointRadius: 4,
+        pointHoverRadius: 6,
+        backgroundColor: (context) =>
+        {
+            const chart = context.chart;
+            const ctx = chart.ctx;
+            const chartArea = chart.chartArea;
+            if(!chartArea)
             {
-                type:'line',
-                label: 'Отзывы',
-                data:[10,25,15,35],
-                borderColor: '#00000',
-                borderWidth: 2,
-                fill: false,
-                tension: 0.4
-            },
-            {
-                type:'bar',
-                label: 'Продажи',
-                data:[50,80,40,90],
-                backgroundColor: '#e63946',
-                borderRadius: 4
+                return null;
             }
-        ]
-    });
-    const chartOptinos = ref({
-        responsive:true,
-        maintainAspectRatio: false
-    })
-    const selectProduct = ref('');
-    const product = ref([]);
-    const loading = ref(true);
-    const analytics = ref([]);
+            const gradient = ctx.createLinearGradient(0, chartArea.top, 0, chartArea.bottom);
+            gradient.addColorStop(0, 'rgba(255, 126, 95, 0.5)');
+            gradient.addColorStop(1, 'rgba(255, 126, 95, 0.0)')
+            return gradient;
+        }
+    }]
+})
+const chartOptions = ref
+({
+    scales:
+    {
+        x:
+        {
+            grid:
+            {
+                display: false
+            }
+        },
+        y:
+        {
+            beginAtZero: true,
+            ticks:
+            {
+                stepSize: 1,
+                precision: 0
+            }
+        }
+        
+    }
+});
+const periods = ['Неделя', '2 недели', 'Месяц', 'Год'];
+const activePeriod = ref('Месяц');   
 
 
-    const loadProductsFromVendor = async() =>
+const updateChart = async(period) =>
+{
+    activePeriod.value = period;
+    const session = localStorage.getItem('user_session');
+    if(!session)
+    {
+        return;
+    }
+    const vendorData = JSON.parse(session);
+    const vendorId = vendorData.id;
+    try
+    {
+    const response = await fetch(`http://localhost:8080/api/orders/vendor/${vendorId}/chart?period=${encodeURIComponent(period)}`);
+    if(response.ok)
+    {
+        const data = await response.json();
+
+        if(data.length === 0)
+        {
+            chartData.value = 
+            {
+                labels: ['Нет данных'],
+                datasets: [{ ...chartData.value.datasets[0], data: [0] }]
+            }
+            return;
+        }
+
+        const newLabels = data.map(item => item.label); 
+        const newData = data.map(item => item.value);
+        chartData.value = 
+        {
+            ...chartData.value,
+            labels: newLabels,
+            datasets:
+            [{
+                ...chartData.value.datasets[0],
+                data: newData   
+            }]
+        }
+    }
+    else
+    {
+        console.error("Ошибка загрузки графика");
+    }
+}
+catch(error)
+{
+    console.error("Ошибка сети:", error);
+}
+    
+    // chartData.value.labels = newData.labels;
+    // chartData.value.datasets[0].data = newData.data;
+    // chartData.value =   {... chartData.value}
+}
+const summaryStats = ref
+({
+    onTimeDelivery: 0,
+    deliveryRating: 0,
+    productRating: 0.0,
+    canceledPercent: 0,
+    totalReviews: 0
+})
+const loadSummaryStats = async() =>
 {
     const session = localStorage.getItem('user_session');
     if(!session)
     {
-        alert("Пожалуйста войдите в аккаунт");
         return;
-        
     }
-    const user = JSON.parse(session);
-    
-    const vendorId = user.id;
+    const vendorId = JSON.parse(session).id;
     try
     {
-        const response = await fetch(`http://localhost:8080/api/products/vendor/${vendorId}`);
+        const response = await fetch(`http://localhost:8080/api/orders/vendor/${vendorId}/summary-stats`);
         if(response.ok)
         {
-            product.value = await response.json();
-            console.log("Товары с сервера:", product.value);
+            summaryStats.value = await response.json();
         }
-        else 
-            {
-                console.error('Сервер ответил ошибкой HTTP:', response.status);
-            }
-        
     }
-    catch (error) 
+    catch(error)
     {
-        console.error('Ошибка связи с сервером Java:', error);
+        console.error("Ошибка загрузки статистики правой панели:", error);
     }
-    finally
-    {
-        loading.value = false;
-    }
-
-}
-const SelectedProduct = async (item) =>
-{
-    selectProduct.value = item;
-    try
-    {
-        const response = await fetch(`http://localhost:8080/api/analytics/product/${item.id}`);
-        if(response.ok)
-        {
-            analytics.value = await response.json();
-            console.log("Короче вот: ", analytics.value);
-
-            const labels = analytics.value.map(stat => stat.monthLabel);
-            const sales = analytics.value.map(stat => stat.salesCount);
-            const reviews = analytics.value.map(stat => stat.reviewsCount);
-
-            chartData.value = 
-            ({
-                labels:labels,
-                datasets:
-                [
-                    {
-                        type:'line',
-                        label: 'Отзывы',
-                        data:reviews,
-                        borderColor: '#00000',
-                        borderWidth: 2,
-                        fill: false,
-                        tension: 0.4
-                    },
-                    {
-                        type:'bar',
-                        label: `Продажи: ${item.brand}`,
-                        data:sales,
-                        backgroundColor: '#e63946',
-                        borderRadius: 4
-                    }
-                ]
-            });
-        }
-        else {
-            console.error('Бэкенд не нашел эндпоинт, статус:', response.status);
-        }
-    } catch(error) {
-        console.error('Сбой сети:', error);
-    }
-    // chartData.value.datasets[0].data = [5, 15, 10, 20];
-    // chartData.value.datasets[1].data = [30, 50, 20, 70];
-    // chartData.value.datasets[1].label = `Продажи: ${item.brand}`;
-
-    // chartData.value = { ...chartData.value };
-   
 }
 onMounted (() =>
 {
-    loadProductsFromVendor();
+    updateChart('Месяц');
+    loadSummaryStats();
 })
 </script>
 
 <template>
 <div class="statistics_grid">
         <div class="statistics_graph">
+            <div class="chart_filters">
+                <button @click="updateChart(period)" v-for="period in periods" :key="period" :class="{ active: activePeriod === period }">
+                    {{ period }}
+                </button>
+            </div>
             <div class="chart_container">
-                <Bar :data="chartData" :options="chartOptinos" />
+                <Line :key="activePeriod" :data="chartData" :options="chartOptions" />
             </div>
         </div>
         <div class="vendor_main">
@@ -154,21 +192,21 @@ onMounted (() =>
                     <details open class="vendor_table_info">
                         <summary>Рейтинг продавца</summary>
                         <ul>
-                            <li value="">Доставка без опозданий 84% </li>
-                            <li value="">Оценка доставки 94%</li>
-                            <li value="">Оценка товара 4.5</li>
-                            <li value="">Отменённые товары 10%</li>
+                            <li><span>Доставка без опозданий</span> <span class="good">{{ summaryStats.onTimeDelivery }}</span> </li>
+                            <li><span>Оценка доставки</span> <span class="good">{{ summaryStats.deliveryRating }}</span></li>
+                            <li><span>Оценка товара</span> <span class="good">{{ summaryStats.productRating }}</span></li>
+                            <li><span>Отменённые товары</span> <span class="warning">{{ summaryStats.canceledPercent }}</span></li>
                         </ul>
                        
                     </details>
                 </div>
                 <div class="vendor_main_info">
-                    <details open class="vendor_table_info">
+                    <details open class="vendor_table_info comm_stats">
                         <summary>Комуникация</summary>
                         <ul>
-                            <li value="">Отзывы <p> 243</p></li>
-                            <li value="">Сообщения <p>10</p></li>
-                            <li value="">Вопросы <p>3</p></li>
+                            <li><span>Отзывы</span> <span>{{ summaryStats.totalReviews }}</span></li>
+                            <li><span>Сообщения</span> <span>10</span></li>
+                            <li><span>Вопросы</span> <span>3</span></li>
                         </ul>
                         
                         
@@ -186,6 +224,30 @@ onMounted (() =>
     height: 80vh;
     gap: 20px;
     overflow: hidden;
+    padding: 50px;
+    padding-top: 0;
+    margin-top: 0;
+}
+.chart_filters {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 20px;
+}
+
+.chart_filters button {
+    padding: 6px 16px;
+    font-size: 14px;
+    border: 1px solid #e0e0e0;
+    background-color: transparent;
+    color: #555;
+    border-radius: 20px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+.chart_filters button.active {
+    background-color: #ff7e5f;
+    color: #ffffff;
+    border-color: #ff7e5f;
 }
 .statistics_graph
 {
@@ -205,47 +267,107 @@ onMounted (() =>
     margin: 20px;
     width: 100%;
     gap: 30px;
+    padding-top: 0;
+    margin-top: 0;
+
 }
 .vendor_main_info
 {
     display: flex;
-    width: 400px;
+    box-sizing: border-box;
+    width: 100%;
     font-weight: 400;
     font-size: 20px;
     gap: 20px;
+    padding: 25px;
+    background-color: #ffffff;
+    border-radius: 15px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+        padding-top: 0;
 
 }
 .vendor_main_info li
 {
+    display: flex;
+    justify-content: space-between;
     text-decoration: none;
     list-style-type: none;
     gap: 20px;
-    font-size: 25px;
+    font-size: 16px;
+    border-bottom: 1px solid #f0f0f0;
+    padding-bottom: 10px;
+
+}
+.comm_stats li span:last-child
+{
     display: inline-block;
+    min-width: 40px;
+    padding: 2px 10px;
+    background-color: #ff7e5f;
+    border-radius: 40px;
+    color: #ffffff;
+    text-align: center;
+    box-shadow: 0 2px 8px rgba(255, 126, 95, 0.3);
+
+}
+.comm_stats li:last-child
+{
+    border-bottom: 0;
 }
 .vendor_table_info
 {
-
+   
+    width: 100%;
 }
 .vendor_table_info ul
 {
+    width: 100%;
     display: flex;
     flex-direction: column;
     justify-content: left;
     gap: 20px;
-}
-.vendor_table_info ul p
-{
-    text-align: center;
-    width: 70px;
-    display: inline-block;
-    background-color: #ff7e5f;
-    border-radius: 40px;
+    margin: 0;
+    padding: 0;
 }
 .vendor_table_info summary
 {
+    display: flex;
+    justify-content: space-between;
     margin-bottom: 20px;
-    font-size: 30px;
+    font-size: 20px;
     font-weight: bold;
+    list-style: none;
+    cursor: pointer;
+}
+.vendor_table_info summary::after
+{
+    content: '▼';
+    transition: transform 0.3s;
+    width: 24px;
+    height: 24px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+details[open].vendor_table_info summary::after
+{
+    transform: rotate(90deg);
+}
+.vendor_main_info li span.good
+{
+    color: #2e7d32;
+    font-weight: 700;
+}
+
+.vendor_main_info li span.warning
+{
+    color: #d32f2f;
+    font-weight: 700;
+}
+.chart_container {
+    position: relative;
+    width: 100%;
+    height: 350px;
+    margin-top: 20px;
 }
 </style>

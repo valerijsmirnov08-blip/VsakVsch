@@ -104,6 +104,9 @@
 <style scoped>
 .search-wrapper {
     position: relative;
+    width: 100%;
+    display: flex; 
+    justify-content: center;
 }
 
 .overlay {
@@ -119,14 +122,16 @@
 .search-input {
     position: relative;
     z-index: 1001;
-    width: 500px;
-    height: 30px;
-    padding: 14px 25px;
+    width: 100%;
+    max-width: 800px;
+    height: 50px;
+    padding: 0 25px;
     border-radius: 30px;
     border: none;
     background-color: #f0f0f0;
     font-size: 18px;
     outline: none;
+    box-sizing: border-box;
 }
 
 .dropdown-panel {
