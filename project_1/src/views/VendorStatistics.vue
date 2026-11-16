@@ -110,7 +110,6 @@ const starsChartOptions = {
     }
 };
 
-// Данные для радарной диаграммы критериев качества
 const radarChartData = computed(() => ({
     labels: [
         'Оценка товаров',
