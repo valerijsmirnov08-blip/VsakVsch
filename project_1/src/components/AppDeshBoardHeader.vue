@@ -3,10 +3,8 @@ import { ref } from 'vue';
 import { RouterLink } from 'vue-router';
 import SearchModal from './SearchModal.vue';
 
-// Реактивная переменная для хранения города
 const currentCity = ref('Великий Новгород');
 
-// Функция для изменения города
 const changeCity = () => {
     const newCity = prompt('Введите ваш город:', currentCity.value);
     if (newCity && newCity.trim() !== '') {
