@@ -2,6 +2,9 @@
 import { ref, onMounted, computed, onUnmounted } from 'vue';
 import router from '@/router';
 
+const emit = defineEmits(['edit-product']);
+
+
 const order = ref([]);
 const currentTab = ref('В процессе');
 const loading = ref(true);
@@ -82,9 +85,11 @@ const updateStatus = async(itemId, newStatus) =>
 {
     try
     {
-        const response = await fetch(`http://localhost:8080/api/orders/items/${itemId}/status?status=${encodeURIComponent(newStatus)}`,
+        const response = await fetch(`http://localhost:8080/api/orders/items/${itemId}/status`,
         {
-            method: 'PUT'
+            method: 'PUT',
+            headers: { 'Content-Type': 'text/plain;charset=UTF-8' },
+            body: newStatus
         })
         if(response.ok)
         {
@@ -124,22 +129,23 @@ const updateStatus = async(itemId, newStatus) =>
 </script>
 
 <template>
-    <RouterLink to="/accaunt" class="back">
-        <button class="back_btn"><img src="/Назад.png" alt="Назад"></button>
-    </RouterLink>
     <h1>Заказы магазина</h1>
     <div class="buttons_current_tab">
-        <button @click="currentTab = 'В процессе'">В процессе</button>
-        <button @click="currentTab = 'Отправлен'">Отправленные</button>
-        <button @click="currentTab = 'Все'">Все</button>
-        <button @click="currentTab = 'Отменен'">Отмененые</button>
+        <button :class="{ active: currentTab === 'В процессе' }" @click="currentTab = 'В процессе'">В процессе</button>
+        <button :class="{ active: currentTab === 'Отправлен' }" @click="currentTab = 'Отправлен'">Отправленные</button>
+        <button :class="{ active: currentTab === 'Доставлен' }" @click="currentTab = 'Доставлен'">Доставленные</button>
+        <button :class="{ active: currentTab === 'Все' }" @click="currentTab = 'Все'">Все</button>
+        <button :class="{ active: currentTab === 'Отменен' }" @click="currentTab = 'Отменен'">Отмененые</button>
     </div>
     
     <div v-if="loading" class="loading">Загрузка товаров из базы данных...</div>
+    <div v-else-if="filteredOrders.length === 0" class="empty_orders">
+        В этой вкладке пока нет заказов
+    </div>
     <div v-else class="vendor_orders">
         <div v-for="item in filteredOrders" :key="item.id" class="vendor_order_card">
             <div class="img_vendor_card">
-                 <img :src="item.product?.mainImage" alt="">
+                 <img :src="item.product.details?.mainImage" alt="">
             </div>
             <div class="vendor_card_main_info">
                 <p>{{ item.price }} ₽</p>
@@ -147,25 +153,29 @@ const updateStatus = async(itemId, newStatus) =>
                 <p>{{ item.product?.rating }} ⭐</p>
             </div>
             <div class="vendor_card_post_info">
-                <p>Заказчик: {{ item.order?.user?.userName }}</p>
-                <p>Пункт выдачи:</p>
-                <p>Срок доставки: {{ item.product?.estimatedDelivery }}</p>
-                <p>Статус: "{{ item.status }}"</p>
-                <!-- <p>{{ item.product?.brand }}</p>
-                <p>{{ item.product?.estimated_delivery }}</p>
-                <p>{{ item.product?.model }}</p> -->
-                
+                <p>Товар: {{ item.product?.name || item.product?.title }}</p>
+                <p>Заказчик: {{ item.customerName || 'Не указан' }}</p>
+                <p>Дата: {{ item.createdAt ? new Date(item.createdAt).toLocaleDateString('ru-RU'): '-' }}</p>
+                <p>Статус: {{ item.status }}</p>                
                 
             </div>
-                <button class="button_send" @click="updateStatus(item.id, 'Отправлен')">Отправить</button>
-                <button class="button_break" @click="updateStatus(item.id, 'Отменен')">Отменить</button>
-                <button class="button_edit" v-if="currentTab === 'Отменен'" @click="router.push(`/edit_product/${item.product?.id}`)">Изменить</button>
-            
+                <button v-if="item.status === 'В процессе'" class="button_send" @click="updateStatus(item.id, 'Отправлен')">Отправить</button>
+                <button v-if="item.status === 'В процессе'" class="button_break" @click="updateStatus(item.id, 'Отменен')">Отменить</button>
+                <button v-if="item.status === 'Отправлен'" class="button_send" @click="updateStatus(item.id, 'Доставлен')">Доставлен</button>
+                <button v-if="item.status === 'Отменен'" class="button_edit" @click="emit('edit-product', item.product?.id)">Изменить</button>
         </div>
     </div>
 </template>
 
 <style scoped>
+.empty_orders, .loading
+{
+    text-align: center;
+    font-size: 20px;
+    color: #666;
+    margin-top: 40px;
+}
+
 h1
 {
     display: flex;
@@ -192,6 +202,11 @@ h1
     cursor: pointer;
     transition: opacity 0.2s;
     box-shadow: 0 4px 10px rgba(255, 126, 95, 0.2);
+}
+.buttons_current_tab button.active
+{
+    outline: 3px solid #333;
+    transform: scale(1.05);
 }
 .vendor_order_card
 {
@@ -226,9 +241,17 @@ h1
 }
 .vendor_order_card img
 {
-    max-width: 200px;
-    max-height: 200px;
+    max-width: 100%;
+    max-height: 140px;
+    object-fit: contain;
 
+}
+.vendor_orders
+{
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 20px;
 }
 .button_break
 {

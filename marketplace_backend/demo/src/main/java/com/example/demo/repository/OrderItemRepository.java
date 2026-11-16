@@ -57,4 +57,6 @@ public interface OrderItemRepository extends JpaRepository<OrderItem, Long>
 
     @Query("SELECT COUNT(o) FROM OrderItem o WHERE o.vendorId = :vendorId AND o.isReviewed = true")
     Long countReviewsByVendorId(@Param("vendorId") Long vendorId);
+
+    List<OrderItem> findByVendorId(Long vendorId);
 }

@@ -7,14 +7,12 @@ import com.example.demo.entity.CartItem;
 import com.example.demo.entity.Product;
 import com.example.demo.entity.Orders;
 import com.example.demo.entity.OrderItem;
-import com.example.demo.entity.ProductMonthlyStat;
 
 import jakarta.transaction.Transactional;
 
 import com.example.demo.repository.CartRepository;
 import com.example.demo.repository.OrderItemRepository;
 import com.example.demo.repository.OrdersRepository;
-import com.example.demo.repository.ProductMonthlyStatRepository;
 import com.example.demo.repository.ProductRepository;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -23,7 +21,6 @@ import org.springframework.data.domain.Page;
 import java.util.List;
 
 import java.math.BigDecimal;
-// import java.util.Optional;
 
 
 @Service 
@@ -37,8 +34,10 @@ public class OrderService
     private OrdersRepository ordersRepository;
     @Autowired
     private OrderItemRepository orderItemRepository;
+    @Autowired
+    private FinancesService financesService;
     @Autowired 
-    private ProductMonthlyStatRepository productMonthlyStatRepository;
+    private AnalyticsService analyticsService;
 
      public Page<OrdersVendorDTO> getOrdersPage(Long vendorId, int page, int size)
     {
@@ -91,7 +90,9 @@ public class OrderService
             orderItem.setQuantity(item.getQuantity());
             orderItem.setStatus("В процессе");
 
-            orderItemRepository.save(orderItem);
+            OrderItem savedItem = orderItemRepository.save(orderItem);
+            financesService.recordSale(savedItem);
+            analyticsService.recordProductSale(product.getId(), item.getQuantity());
         }
         cartRepository.deleteAll(cartItems);
         return saveOreder;

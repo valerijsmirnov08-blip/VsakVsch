@@ -1,9 +1,23 @@
 <script setup>
-import {ref, computed, watch, onMounted} from 'vue';
+import { ref, onMounted } from 'vue';
 import { useRouter } from 'vue-router';
+import { useCatalogSpecs } from '@/composables/useCatalogSpecs';
+import ProductSpecsEditor from '@/components/ProductSpecsEditor.vue';
+import { useVendorProducts } from '@/composables/useVendorProducts';
 
-const categoryId = ref(1);
-const subCategory = ref('Смартфон');
+const emit = defineEmits(['close']); 
+const { createProduct, getVendorId } = useVendorProducts();
+
+const {
+    categoryId,
+    subCategory,
+    dynamicSpecs,
+    customSpecs,
+    availableSubcategories,
+    currentFields
+} = useCatalogSpecs();
+
+
 
 const brand = ref('');
 const model = ref('');
@@ -12,6 +26,7 @@ const quantity = ref(0);
 const description = ref('');
 const warranty = ref('');
 const vendorSku = ref('');
+const categories = ref([]);
 
 const mainImage = ref(null);
 const mainImagePreview = ref(null);
@@ -19,151 +34,71 @@ const isDragover = ref(false);
 
 const gallery = ref('');
 const galleryPreview = ref([]);
-const isGalleryDragover = ref(false)
-
-const router = useRouter();
-const currentVendorId = ref(null);
-
-onMounted(() =>
-{
-    const sessionStr = localStorage.getItem('user_session');
-    
-    if (!sessionStr) {
-        alert("Для создания товара необходимо авторизоваться!");
-        router.push("/accaunt");
-        return;
-    }
-    const sessionData = JSON.parse(sessionStr);
-    currentVendorId.value = sessionData.id;
-});
-
-const catalogStructure = 
-{
-    1:
-    { 
-        name: 'Электроника', 
-        subcategories: ['Смартфон', 'Ноутбук'] 
-    },
-    2:
-    { 
-        name: 'Одежда', 
-        subcategories: ['Футболка', 'Джинсы', 'Кофта'] 
-    }
-}
-const specsCatalog = 
-{
-    'Смартфон':
-    [
-        { key: 'memory', label: 'Встроенная память', type: 'select', options: ['64 ГБ', '128 ГБ', '256 ГБ'] },
-        { key: 'os', label: 'Операционная система', type: 'text', placeholder: 'Например: Android' }
-    ],
-    'Футболка':
-    [
-        { key: 'size', label: 'Размер', type: 'select', options: ['S', 'M', 'L', 'XL'] },
-        { key: 'material', label: 'Материал', type: 'text', placeholder: 'Например: 100% хлопок' }
-    ],
-    'Кофта':
-    [
-        {key: 'size', label: 'Размер', type: 'select', options: ['S', 'M', 'L', 'XL'] },
-        {key: 'material', label: 'Материал', type: 'text', placeholder: 'Например: 100% хлопок' }
-    ]
-};
-
-const dynamicSpecs = ref({});
-
-const currentFields = computed(() =>
-{
-    return specsCatalog[subCategory.value] || [];
-})
-watch(subCategory, () =>
-{
-    dynamicSpecs.value = {};
-});
-const availableSubcategories = computed(() =>
-{
-    return catalogStructure[categoryId.value].subcategories;
-})
-watch(categoryId, () =>
-{
-    subCategory.value = availableSubcategories.value[0];
-})
-
-const handleMainImageDrop = (event) =>
-{
-    isDragover.value = false;
-    const file = event.dataTransfer.files[0];
-    
-    if(file)
-{
-    mainImage.value = file;
-    mainImagePreview.value = URL.createObjectURL(file);
-}
-}
-const handleGalleryDrop = (event) =>
-{
-    isGalleryDragover.value = false;
-    const filesList = event.dataTransfer.files;
-
-    if(filesList && filesList.length > 0)
-    {
-        const files = Array.from(filesList);
-        gallery.value = files.map(file => file.name).join(', ');
-        galleryPreview.value = files.map(file => URL.createObjectURL(file));
-    }
-}
-
+const isGalleryDragover = ref(false);
 
 const selectedBaseColor = ref('Черный');
-const customHexColor = ref('111111');
+const customHexColor = ref('#111111');
 const customColorName = ref('');
 
-const baseColorPalette = 
-[
+const baseColorPalette = [
     { name: 'Черный', hex: '#111111' },
     { name: 'Белый', hex: '#ffffff' },
     { name: 'Красный', hex: '#dc2626' },
     { name: 'Синий', hex: '#2563eb' },
     { name: 'Зеленый', hex: '#16a34a' }
-]
-const selectPaletteColor = (colorObj) =>
-{   
+];
+
+const selectPaletteColor = (colorObj) => {   
     selectedBaseColor.value = colorObj.name;
     customHexColor.value = colorObj.hex;
-}
+};
 
-const customSpecs = ref([]);
+const router = useRouter();
+const currentVendorId = ref(null);
 
-const addCustomSpec = () =>
-{
-    customSpecs.value.push({name: '', value: ''})
-}
-const removeCustomSpec = (index) =>
-{
-    customSpecs.value.splice(index, 1)
-}
+
+const handleMainImageDrop = (event) => {
+    isDragover.value = false;
+    const file = event.dataTransfer.files[0];
+    if (file) {
+        mainImage.value = file;
+        mainImagePreview.value = URL.createObjectURL(file);
+    }
+};
+
+const handleGalleryDrop = (event) => {
+    isGalleryDragover.value = false;
+    const filesList = event.dataTransfer.files;
+    if (filesList && filesList.length > 0) {
+        const files = Array.from(filesList);
+        gallery.value = files.map(file => file.name).join(', ');
+        galleryPreview.value = files.map(file => URL.createObjectURL(file));
+    }
+};
+
 const submitProduct = async () => {
-
-    if (!brand.value.trim() || !model.value.trim() || price.value <= 0) {
-        alert("Заполните обязательные поля: Бренд, Модель и укажите корректную цену.");
+    if (!brand.value.trim() || !model.value.trim() || price.value <= 0 || !warranty.value) {
+        alert("Заполните обязательные поля: Бренд, Модель, цену и выберите срок гарантии.");
         return;
     }
-    
     if (!mainImage.value) {
         alert("Пожалуйста, загрузите главное фото товара.");
         return;
     }
+
     const payload = {
         brand: brand.value,
         model: model.value,
         price: Number(price.value),
         quantity: Number(quantity.value),
         vendor: { id: currentVendorId.value },
+        vendorSku: vendorSku.value,
+        rating: 0.0,
         category: { id: categoryId.value },
         warranty: warranty.value,
         description: description.value,
         details: {
             mainImage: mainImage.value ? mainImage.value.name : '',
-            vendorSku: vendorSku.value,
             gallery: gallery.value,
             color: selectedBaseColor.value,
             colorHex: customHexColor.value,
@@ -173,22 +108,30 @@ const submitProduct = async () => {
         }
     };
 
-    try {
-        const response = await fetch('http://localhost:8080/api/products/create', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(payload)
-        });
-
-        if (response.ok) {
-            alert("Товар успешно отправлен в базу!");
-        } else {
-            alert("Ошибка бэкенда при создании");
-        }
-    } catch (error) {
-        console.error("Ошибка сети:", error);
+    const success = await createProduct(payload);
+    if (success) {
+        alert("Товар успешно отправлен в базу!");
+        emit('close');
     }
 };
+const loadCategory = async() =>
+{
+    const response = await fetch('http://localhost:8080/api/category/roots');
+    if (response.ok) categories.value = await response.json();
+}
+onMounted(() =>  {
+    const id = getVendorId();
+    if (!id) {
+        alert("Для создания товара необходимо авторизоваться!");
+        router.push("/accaunt");
+        return;
+    }
+    currentVendorId.value = id;
+    loadCategory();
+        
+});
+
+
 
 
 </script>
@@ -235,8 +178,9 @@ const submitProduct = async () => {
                      <div class="info_group half">
                         <label>Глобальная категория</label>
                         <select v-model.number="categoryId" class="mega_input select">
-                            <option :value="1">Электроника</option>
-                            <option :value="2">Одежда</option>
+                            <option v-for="cat in categories" :key="cat.id" :value="cat.id">
+                                {{ cat.name }}
+                            </option>
                         </select>
                      </div>
                      <div class="info_group half">
@@ -308,33 +252,16 @@ const submitProduct = async () => {
             </div>
         </div>
         <div class="card_bottom">
-            <div class="specs_header">
-                <h3 class="section_title">Характеристики: {{ subCategory }}</h3>
-            </div>
-            <div class="dynamic_spec_grid">
-                <div v-for="field in currentFields":key="field.key" class="spec_input_group">
-                    <label>{{ field.label }}</label>
-                    <select v-if="field.type === 'select'" v-model="dynamicSpecs[field.key]" class="mega_input spec">
-                        <option value="" disabled selected>Выберите из списка</option>
-                        <option v-for="opt in field.options" :key="opt" :value="opt">{{ opt }}</option>
-                    </select>
-                    <input v-else :type="field.type" v-model="dynamicSpecs[field.key]" :placeholder="field.placeholder" class="mega_input spec">
-                </div>
-            </div>
-            <div class="custom_specs_section">
-                <div class="custom_specs_header">
-                    <h4>Дополнительные характеристики (по желанию)</h4>
-                    <button @click="addCustomSpec" type="button" class="btn_add_spec">+ Добавить параметр</button>
-                </div>
-                <div v-for="(spec, idx) in customSpecs" :key="idx" class="custom_spec_row">
-                    <input v-model="spec.name" type="text" class="mega_input spec" placeholder="Название (напр. Страна производства)">
-                    <input v-model="spec.value" type="text" class="mega_input spec" placeholder="Значение (напр. Китай)">
-                    <button @click="removeCustomSpec(idx)" type="button" class="btn_remove_spec">✕</button>
-                </div>
-                <div class="info_group">
-                    <label style="font-size: 18px; font-weight: 800; color: #111;">Полное описание товара</label>
-                    <textarea v-model="description" class="mega_input textarea" placeholder="Подробно расскажите о преимуществах, особенностях использования и комплектации товара"></textarea>
-                </div>
+            <ProductSpecsEditor
+                :subCategory="subCategory"
+                :currentFields="currentFields"
+                v-model:dynamicSpecs="dynamicSpecs"
+                v-model:customSpecs="customSpecs"
+            />
+
+            <div class="info_group" style="margin-top: 25px;">
+                <label style="font-size: 18px; font-weight: 800; color: #111;">Полное описание товара</label>
+                <textarea v-model="description" class="mega_input textarea" placeholder="Подробно расскажите о преимуществах, особенностях использования и комплектации товара"></textarea>
             </div>
         </div>
 
@@ -614,16 +541,7 @@ const submitProduct = async () => {
     color: #111;
     font-weight: 800;
 }
-.specs_header
-{
-    margin-bottom: 30px;
-}
-.dynamic_spec_grid
-{
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
-    gap: 24px;
-}
+
 .spec_input_group label
 {
     font-size: 15px;
@@ -637,12 +555,7 @@ const submitProduct = async () => {
     width: 100%;
     box-sizing: border-box;
 }
-.custom_specs_section
-{
-    margin-top: 35px;
-    padding-top: 25px;
-    border-top: 2px dashed #e2e8f0;
-}
+
 .custom_specs_header
 {
     display: flex;

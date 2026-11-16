@@ -82,7 +82,7 @@ const chartOptions = ref
     }
 });
 const periods = ['Неделя', '2 недели', 'Месяц', 'Год'];
-const activePeriod = ref('Месяц');   
+const activePeriod = ref('Неделя');      
 
 
 const updateChart = async(period) =>
@@ -170,7 +170,7 @@ const loadSummaryStats = async() =>
 }
 onMounted (() =>
 {
-    updateChart('Месяц');
+    updateChart('Неделя');
     loadSummaryStats();
 })
 </script>

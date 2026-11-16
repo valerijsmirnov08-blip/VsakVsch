@@ -1,5 +1,5 @@
 <script setup>
-    import {ref, onMounted } from 'vue';
+    import {ref, onMounted, computed } from 'vue';
     import { RouterLink } from 'vue-router';
 
     const searchtext = ref('');
@@ -29,20 +29,25 @@
     }
     const performSearch = async () =>
     {
-        if(searchtext.value.trim().length >= 2)
+        if(searchtext.value.trim().length < 2 && categoryId.value === null)
+        
         {
-            let url = `http://localhost:8080/api/products/search?searchText=${searchtext.value}`;
+            searchResult.value = [];
+            return;
+        }
+            let url = `http://localhost:8080/api/products/search?searchText=${encodeURIComponent(searchtext.value.trim())}`;
             if(categoryId.value !== null)
             {
                 url += `&categoryId=${categoryId.value}`;
             }
             const response = await fetch(url);
-            searchResult.value = await response.json();
-        }else
-        {
-            searchResult.value = [];
-        }
+            if(response.ok)
+            {
+                searchResult.value = await response.json();
+            }
+            
     } 
+    const selectedCategoryName = computed(() => category.value.find(c => c.id === categoryId.value)?.name || '');
     onMounted(() =>
     {
         loadCategories();
@@ -77,7 +82,12 @@
             </div>
              
             <div class="dropdown-content">
-    <h3 class="dropdown-title">Результат поиска</h3>
+            <h3 class="dropdown-title">
+                Результат поиска
+                <span v-if="selectedCategoryName" class="cat-badge" @click="categoryId = null; performSearch()">
+                    {{ selectedCategoryName }} ✕
+                </span>
+            </h3>
     
             <ul v-if="searchResult.length > 0" class="result-list">
                 <li v-for="product in searchResult" :key="product.id" class="result-item">
@@ -94,7 +104,7 @@
             </ul>
             
             <div v-else class="empty-state">
-                Начните вводить название товара...
+                {{ categoryId !== null || searchtext.trim().length >= 2 ? 'Товары не найдены' : 'Выберите категорию или введите название...' }}
             </div>
         </div>
 
@@ -276,5 +286,11 @@
 .empty-state {
     color: #888;
     font-size: 14px;
+}
+.cat-badge
+{
+    display: inline-block; margin-left: 10px; padding: 4px 12px;
+    background: #ff7e5f; color: #fff; border-radius: 20px;
+    font-size: 13px; font-weight: 600; cursor: pointer;
 }
 </style>

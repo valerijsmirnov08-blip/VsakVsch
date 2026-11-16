@@ -7,7 +7,6 @@ import Accaunt from "./views/Accaunt.vue";
 import Catalog from "./views/MainCatalog.vue";
 import Vendor_B from "./views/BecomeVendor.vue";
 import Create from "./views/CreateProduct.vue";
-import Vendor_O from "./views/VendorOrders.vue";
 import Vendor_S from "./views/VendorStatistics.vue";
 import Vendor_W from "./views/VendorWarehouse.vue";
 import Edit_P from "./views/EditProduct.vue";
@@ -15,6 +14,8 @@ import Reviews from "./views/Reviews.vue";
 import Favorites from "./views/Favorites.vue";
 import Delivery from "./views/Delivery.vue";
 import VendorDeschBoard from "./views/VendorDeschBoard.vue";
+import MessengerView from "./components/MessengerView.vue";
+import ChatsHubView from "./components/ChatsHubView.vue";
 const router = createRouter
 ({
     history: createWebHistory(),
@@ -27,7 +28,6 @@ const router = createRouter
         {path: '/accaunt', component: Accaunt},
         {path: '/product/:id', component: Product},
         {path: '/vendor_b', component: Vendor_B},
-        {path: '/vendor_o', component: Vendor_O},
         {path: '/vendor_s', component: Vendor_S},
         {path: '/vendor_w', component: Vendor_W},
         {path: '/create_product', component: Create},
@@ -35,7 +35,9 @@ const router = createRouter
         {path: '/edit_product/:id', component: Edit_P},
         {path: '/favorites', component:Favorites},
         {path: '/delivery', component:Delivery},
-        {path: '/vendor_dash_board', component:VendorDeschBoard}
+        {path: '/vendor_dash_board', component:VendorDeschBoard},
+        {path: '/messenger', component:MessengerView},
+        {path: '/chats', component:ChatsHubView}
     ]
 })
 export default router

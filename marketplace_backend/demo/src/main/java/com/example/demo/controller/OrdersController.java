@@ -3,6 +3,7 @@ package com.example.demo.controller;
 import com.example.demo.repository.OrdersRepository;
 import com.example.demo.repository.ProductRepository;
 import com.example.demo.repository.OrderItemRepository;
+import com.example.demo.service.FinancesService;
 import com.example.demo.service.OrderService;
 import com.example.demo.entity.OrderItem;
 import com.example.demo.entity.Orders;
@@ -31,6 +32,8 @@ public class OrdersController
     private OrderItemRepository orderItemRepository;
     @Autowired 
     private ProductRepository productRepository;
+    @Autowired
+    private FinancesService financesService;
 
     @PostMapping("/checkout/{userId}")
     public ResponseEntity<?> createOrder(@PathVariable  Long userId)
@@ -105,6 +108,7 @@ public class OrdersController
             .orElseThrow(() -> new RuntimeException("Позиция заказа не найдена"));
             item.setStatus(status); 
             orderItemRepository.save(item);
+            financesService.updateSaleStatusByOrderItem(itemId, status);
             return ResponseEntity.ok(item);
         }
         catch(RuntimeException e)

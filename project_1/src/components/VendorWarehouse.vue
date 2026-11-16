@@ -1,40 +1,20 @@
 <script setup>
-import { computed, ref, onMounted } from 'vue';
+import { ref, onMounted } from 'vue';
+import { useVendorProducts } from '@/composables/useVendorProducts';
 import VendorEditProduct from '@/components/VendorEditProduct.vue';
+import VendorCreateProduct from '@/components/VendorCreateProduct.vue';
 
-const product = ref([]);
-const loading = ref(true);
+const { products, loading, fetchVendorProducts } = useVendorProducts();
 const editingProductId = ref(null);
+const isCreating = ref(false);
 
-const loadProductsFromVendor = async() => {
-    loading.value = true;
-    const session = localStorage.getItem('user_session');
-    if(!session) {
-        alert("Пожалуйста войдите в аккаунт");
-        return;
-    }
-    const user = JSON.parse(session);
-    const vendorId = user.id;
-    
-    try {
-        const response = await fetch(`http://localhost:8080/api/products/vendor/${vendorId}`);
-        if(response.ok) {
-            product.value = await response.json();
-        }
-    } catch (error) {
-        console.error('Ошибка связи с сервером Java:', error);
-    } finally {
-        loading.value = false;
-    }
-}
-const closeEditor = () => {
+const closeSubView = async () => {
     editingProductId.value = null;
-    loadProductsFromVendor();
-}
+    isCreating.value = false;
+    await fetchVendorProducts();
+};
 
-onMounted(() => {
-    loadProductsFromVendor();
-});
+onMounted(fetchVendorProducts);
 </script>
 
 <template>
@@ -42,13 +22,18 @@ onMounted(() => {
         <VendorEditProduct 
             v-if="editingProductId" 
             :productId="editingProductId" 
-            @close="closeEditor" 
+            @close="closeSubView" 
+        />
+
+        <VendorCreateProduct 
+            v-else-if="isCreating" 
+            @close="closeSubView" 
         />
 
         <div v-else>
             <div class="warehouse_header">
                  <h1>Товары на складе</h1>
-                 <button class="btn_add">+ Добавить товар</button>
+                 <button @click="isCreating = true" class="btn_add">+ Добавить товар</button>
             </div>
             
             <div v-if="loading" class="loading_state">
@@ -56,7 +41,7 @@ onMounted(() => {
             </div>
             
             <div v-else class="product_grid">
-                <div v-for="item in product" :key="item.id" class="product_card">
+                <div v-for="item in products" :key="item.id" class="product_card">
                     <div class="card_img_wrap">
                         <img :src="'/' + (item.details?.mainImage || '')" :alt="item.model">
                     </div>

@@ -1,10 +1,15 @@
 package com.example.demo.service;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
+import com.example.demo.repository.CartRepository;
+import com.example.demo.repository.FavoriteRepository;
 import com.example.demo.repository.ProductRepository;
 import com.example.demo.dto.ProductCatalogDto;
 import com.example.demo.entity.Product;
+
+import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -16,6 +21,10 @@ public class ProductService
 {
     @Autowired 
     private ProductRepository productRepository;
+    @Autowired 
+    private FavoriteRepository favoriteRepository;
+    @Autowired 
+    private CartRepository cartRepository;
 
     public List<ProductCatalogDto> getAllProducts()
     {
@@ -38,7 +47,8 @@ public class ProductService
 
     public List<Product> search(String searchText, Long categoryId)
     {
-        if(searchText == null || searchText.trim().length() < 2)
+        String query = searchText == null ? "" : searchText.toLowerCase().trim();
+        if (categoryId == null && query.length() < 2)
         {
             return List.of();
         }
@@ -55,7 +65,14 @@ public class ProductService
         {
 
         }
-        String query = searchText.toLowerCase().trim();
         return productRepository.searchProducts(query, categoryId);
+    }
+    @Transactional 
+    @CacheEvict(value = "productCache", key = "#id")
+    public void deleteProduct(Long id)
+    {
+        favoriteRepository.deleteByProductId(id);
+        cartRepository.deleteByProductId(id);
+        productRepository.deleteById(id);
     }
 }

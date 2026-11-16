@@ -9,22 +9,23 @@ import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
-import jakarta.persistence.Index;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
 
 @Entity 
-@Table (name = "chat_messeges", indexes = 
-    {
-        @Index (name = "idx_chat_user_id", columnList = "user_id")
-    }
-)
+@Table (name = "chat_messeges")
 public class ChatMessage
 {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
-    @Column(name = "user_id", nullable = false)
+    @Column(name = "user_id", nullable = true)
     private String userId;
+    
+    @ManyToOne
+    @JoinColumn(name = "conversation_id")
+    private Conversation conversation;
 
     @Column(nullable = false)
     private String sender;
@@ -34,6 +35,13 @@ public class ChatMessage
 
     @Column(name = "created_at")
     private LocalDateTime createdAt = LocalDateTime.now();
+
+    @ManyToOne
+    @JoinColumn(name = "sender_user_id")
+    private Users senderUser;
+
+    @Column(name = "is_read", nullable = false)
+    private Boolean isRead = false;
 
     public ChatMessage() {}
 
@@ -48,9 +56,18 @@ public class ChatMessage
     public String getUserId() { return userId; }
     public void setUserId(String userId) { this.userId = userId; }
 
+    public Conversation getConversation() { return conversation; }
+    public void setConversation(Conversation conversation) { this.conversation = conversation; }
+
     public String getSender() { return sender; }
     public void setSender(String sender) { this.sender = sender; }
 
     public String getText() { return text; }
     public void setText(String text) { this.text = text; }
+
+    public Users getSenderUser() { return senderUser; }
+    public void setSenderUser(Users senderUser) { this.senderUser = senderUser; }
+
+    public Boolean getIsRead() { return isRead; }
+    public void setIsRead(Boolean isRead) { this.isRead = isRead; }
 }

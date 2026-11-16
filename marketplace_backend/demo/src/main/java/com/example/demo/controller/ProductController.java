@@ -6,6 +6,7 @@ import com.example.demo.service.ProductService;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.data.domain.Page;
@@ -45,13 +46,22 @@ public class ProductController
     @DeleteMapping("/{id}")
     public ResponseEntity<?> deleteProduct(@PathVariable Long id)
     {
+        System.out.println(">>> Запрос на удаление товара ID: " + id + ", есть в БД: " + productRepository.existsById(id));
         if(!productRepository.existsById(id))
         {
             return ResponseEntity.notFound().build();
         }
-        productRepository.deleteById(id);
-
-        return ResponseEntity.ok("Товар успешно удален");
+        try
+        {
+           productService.deleteProduct(id);
+            System.out.println(">>> Успешно удалён товар ID: " + id);
+            return ResponseEntity.ok("Товар успешно удален");
+        }
+        catch (DataIntegrityViolationException e)
+        {
+            System.out.println("Причина блокировки: " + e.getMostSpecificCause().getMessage());
+            return ResponseEntity.badRequest().body("Нельзя удалить товар: он уже есть в заказах или отзывах");
+        }
     } 
     @CacheEvict(value = "productCache", allEntries = true) 
     @PutMapping ("/{id}")
@@ -95,12 +105,12 @@ public class ProductController
     @GetMapping("/search")
     public ResponseEntity<List<Product>> searchProducts
     (
-        @RequestParam String searchText,
+        @RequestParam(defaultValue = "") String searchText,
         @RequestParam(required = false) Long categoryId)
+           
     {
-    
-    List<Product> results = productService.search(searchText, categoryId);
-    return ResponseEntity.ok(results);
+        return ResponseEntity.ok(productService.search(searchText, categoryId)); 
+
     }
 }
 

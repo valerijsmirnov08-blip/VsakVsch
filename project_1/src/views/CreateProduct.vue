@@ -4,7 +4,6 @@ import { useRouter, RouterLink } from 'vue-router';
 
 const router = useRouter();
 
-// Базовые поля
 const brand = ref('');
 const model = ref('');
 const price = ref(0);
@@ -14,11 +13,9 @@ const description = ref('');
 const warranty = ref('1 год');
 const estimatedDelivery = ref('Завтра');
 
-// Категория и Подкатегория (Двухуровневая система как на Ozon)
 const categoryId = ref(1);
 const subCategory = ref('Смартфон');
 
-// Цвет товара (Базовый для фильтра + HEX для кружка + свой оттенок)
 const selectedBaseColor = ref('Черный');
 const customHexColor = ref('#111111');
 const customColorName = ref('');
@@ -44,7 +41,6 @@ const selectPaletteColor = (colorObj) => {
     customHexColor.value = colorObj.hex;
 };
 
-// Медиа
 const mainImage = ref('');
 const gallery = ref('');
 const isMainDragover = ref(false);
@@ -52,12 +48,10 @@ const isGalleryDragover = ref(false);
 const mainImagePreview = ref(null);
 const galleryPreviews = ref([]);
 
-// Системные
 const errorMessage = ref('');
 const successMessage = ref('');
 const currentVendorId = ref(null);
 
-// --- ДВУХУРОВНЕВОЕ ДЕРЕВО ХАРАКТЕРИСТИК (OZON-STYLE) ---
 const catalogStructure = {
     1: {
         name: 'Электроника и техника',
@@ -137,13 +131,11 @@ const catalogStructure = {
     }
 };
 
-// Список доступных подкатегорий для выбранной главной категории
 const availableSubcategories = computed(() => {
     const cat = catalogStructure[categoryId.value];
     return cat ? Object.keys(cat.subcategories) : [];
 });
 
-// Текущий список полей для выбранной подкатегории
 const currentCategoryFields = computed(() => {
     const cat = catalogStructure[categoryId.value];
     if (!cat || !cat.subcategories[subCategory.value]) return [];
@@ -152,7 +144,6 @@ const currentCategoryFields = computed(() => {
 
 const dynamicSpecs = reactive({});
 
-// Пользовательские характеристики от продавца (конструктор)
 const customSpecs = ref([]);
 const addCustomSpec = () => {
     customSpecs.value.push({ name: '', value: '' });
@@ -161,14 +152,12 @@ const removeCustomSpec = (idx) => {
     customSpecs.value.splice(idx, 1);
 };
 
-// При смене глобальной категории выбираем первую подкатегорию и чистим поля
 watch(categoryId, () => {
     const subs = availableSubcategories.value;
     subCategory.value = subs.length > 0 ? subs[0] : '';
     for (const key in dynamicSpecs) delete dynamicSpecs[key];
 });
 
-// При смене подкатегории очищаем введенные старые поля
 watch(subCategory, () => {
     for (const key in dynamicSpecs) delete dynamicSpecs[key];
 });
@@ -183,7 +172,6 @@ onMounted(() => {
     currentVendorId.value = JSON.parse(session).id;
 });
 
-// --- ОБРАБОТЧИКИ ФОТО ---
 const handleMainImageDrop = (e) => {
     isMainDragover.value = false;
     const files = e.dataTransfer.files;
@@ -206,7 +194,6 @@ const handleGalleryDrop = (e) => {
 
 const areBothImagesLoaded = computed(() => mainImagePreview.value !== null || mainImage.value.trim() !== '');
 
-// --- ОТПРАВКА НА СЕРВЕР ---
 const handleCreateProduct = async () => {
     errorMessage.value = '';
     successMessage.value = '';
@@ -216,13 +203,11 @@ const handleCreateProduct = async () => {
         return;
     }
 
-    // Собираем шаблонные характеристики
     const activeSpecs = {};
     currentCategoryFields.value.forEach(field => {
         if (dynamicSpecs[field.key]) activeSpecs[field.key] = dynamicSpecs[field.key];
     });
 
-    // Собираем кастомные характеристики продавца
     customSpecs.value.forEach(item => {
         if (item.name.trim() && item.value.trim()) {
             activeSpecs[item.name.trim()] = item.value.trim();
@@ -283,7 +268,6 @@ const handleCreateProduct = async () => {
         <form @submit.prevent="handleCreateProduct" class="mock-product-card">
             
             <div class="card-top">
-                <!-- ЛЕВЫЙ БЛОК: Фото -->
                 <div class="card-media">
                     <label class="section-label">Главное фото *</label>
                     <div class="main-dropzone"
@@ -316,9 +300,7 @@ const handleCreateProduct = async () => {
                     </div>
                 </div>
 
-                <!-- ПРАВЫЙ БЛОК: Основная витринная информация -->
                 <div class="card-info">
-                    <!-- Двухуровневый выбор категории -->
                     <div class="info-row">
                         <div class="info-group half">
                             <label>Глобальная категория</label>
@@ -359,14 +341,12 @@ const handleCreateProduct = async () => {
                         </div>
                     </div>
 
-                    <!-- ВЫБОР ЦВЕТА: Палитра + Цветовой круг -->
                     <div class="color-picker-block">
                         <label class="color-block-label">
                             Цвет товара: <span class="selected-color-text">{{ selectedBaseColor }}</span>
                         </label>
                         
                         <div class="palette-row">
-                            <!-- Готовые кружки для фильтра -->
                             <button 
                                 v-for="c in baseColorPalette" 
                                 :key="c.name"
@@ -378,7 +358,6 @@ const handleCreateProduct = async () => {
                                 @click="selectPaletteColor(c)">
                             </button>
 
-                            <!-- Свободный цветовой круг (HTML5 Color Picker) -->
                             <label class="custom-color-wheel" title="Выбрать точный оттенок на круге">
                                 <input type="color" v-model="customHexColor">
                                 <span class="wheel-icon" :style="{ backgroundColor: customHexColor }">🎨</span>
@@ -417,7 +396,6 @@ const handleCreateProduct = async () => {
                 </div>
             </div>
 
-            <!-- НИЖНИЙ БЛОК: Характеристики под выбранный тип товара -->
             <div class="card-bottom">
                 <div class="specs-header">
                     <h3 class="section-title">Характеристики: {{ subCategory }}</h3>
@@ -437,7 +415,6 @@ const handleCreateProduct = async () => {
                     </div>
                 </div>
 
-                <!-- БЛОК КАСТОМНЫХ ХАРАКТЕРИСТИК ОТ ПРОДАВЦА -->
                 <div class="custom-specs-section">
                     <div class="custom-specs-header">
                         <h4>Дополнительные характеристики (по желанию)</h4>
@@ -457,7 +434,6 @@ const handleCreateProduct = async () => {
                 </div>
             </div>
 
-            <!-- ЦЕНТРИРОВАННАЯ ЗОНА ПУБЛИКАЦИИ -->
             <div class="submit-zone">
                 <p v-if="errorMessage" class="msg error">{{ errorMessage }}</p>
                 <p v-if="successMessage" class="msg success">{{ successMessage }}</p>
@@ -525,7 +501,6 @@ const handleCreateProduct = async () => {
     border-bottom: 1px solid #eaeaea;
 }
 
-/* ЛЕВЫЙ БЛОК (ФОТО) */
 .card-media {
     flex: 0 0 520px;
     display: flex;
@@ -601,7 +576,6 @@ const handleCreateProduct = async () => {
     box-sizing: border-box;
 }
 
-/* ПРАВЫЙ БЛОК (ИНФО) */
 .card-info {
     flex: 1;
     display: flex;
@@ -656,7 +630,6 @@ const handleCreateProduct = async () => {
     font-weight: 700;
 }
 
-/* БЛОК ВЫБОРА ЦВЕТА */
 .color-picker-block {
     background: #f8fafc;
     border: 2px solid #e2e8f0;
@@ -743,7 +716,6 @@ const handleCreateProduct = async () => {
     font-size: 16px;
 }
 
-/* НИЖНИЙ БЛОК (ХАРАКТЕРИСТИКИ) */
 .card-bottom {
     padding: 50px;
     background: #fcfcfd;
@@ -780,7 +752,6 @@ const handleCreateProduct = async () => {
 .spec { padding: 16px 20px; font-size: 18px; width: 100%; box-sizing: border-box; }
 .textarea { height: 180px; resize: vertical; line-height: 1.6; width: 100%; box-sizing: border-box; }
 
-/* ДОПОЛНИТЕЛЬНЫЕ ХАРАКТЕРИСТИКИ */
 .custom-specs-section {
     margin-top: 35px;
     padding-top: 25px;
@@ -829,14 +800,13 @@ const handleCreateProduct = async () => {
     flex-shrink: 0;
 }
 
-/* КНОПКА ОТПРАВКИ ПО ЦЕНТРУ */
 .submit-zone {
     padding: 40px 50px;
     background: #fff;
     border-top: 1px solid #eaeaea;
     display: flex;
     flex-direction: column;
-    align-items: center; /* Центрирование */
+    align-items: center;
     justify-content: center;
     gap: 15px;
 }

@@ -1,5 +1,5 @@
 <script setup>
-    import { onMounted, ref } from 'vue'
+    import { onMounted, ref, computed } from 'vue'
     import {useRouter} from 'vue-router';
     const router = useRouter();
     
@@ -12,8 +12,9 @@
     const editShopName = ref('');
     const editShopDesc = ref('');
     const editBrandName = ref('');
+    
 
-    const isVendor = ref(true);
+    const isVendor = computed(() => userDate.value?.role === 'VENDOR');
     const userDate = ref(null);
     const userId = ref('');
 
@@ -208,30 +209,18 @@
                 <img src="/Коробка_доставка.png" alt="">
                 <RouterLink to="/delivery">Доставка</RouterLink>
             </div>
-            <div v-if="!userDate.isVendor" class="profil_links">
+            <div v-if="!isVendor" class="profil_links">
                 <img src="/Продавец_ЧБ.png" alt="">
                 <RouterLink to="/vendor_b">Стать продавцом</RouterLink>
             </div>
-            <div v-if="userDate.isVendor" class="profil_links" @click="stopVendor">
+            <div v-if="isVendor" class="profil_links" @click="stopVendor">
                 <img src="/Продавец_ЧБ.png" alt="">
                 <a href="#" @click.prevent>Перестать быть продавцом</a>
             </div>
-            <div class="profil_links">
+            <div v-if="isVendor" class="profil_links">
                 <img src="/СтатистикаПродавец_ЧБ.png" alt="">
                 <RouterLink to="/vendor_dash_board">Панель продавца</RouterLink>
             </div>
-            <!-- <div v-if="userDate.isVendor" class="profil_links">
-                <img src="/ЗаказыПродавец_ЧБ.png" alt="">
-                <RouterLink to="/vendor_o">Заказы</RouterLink>
-            </div>
-            <div v-if="userDate.isVendor" class="profil_links">
-                <img src="/СтатистикаПродавец_ЧБ.png" alt="">
-                <RouterLink to="/vendor_s">Статистика</RouterLink>
-            </div>
-            <div v-if="userDate.isVendor" class="profil_links">
-                <img src="/Склад_Продавец_ЧБ.png" alt="">
-                <RouterLink to="/vendor_w">Склад</RouterLink>
-            </div> -->
             <div class="profil_links">
                 <img src="/Работа.png" alt="">
                 <a class="accaunt_work" href ="">Работа на складе/<wbr>Пункте выдачи</a>
@@ -269,9 +258,9 @@
             <form action="">
                 <h2>Изменение аккаунта</h2>
                 <input v-model="editName" type="text" placeholder="Изменить имя аккаунта">
-                <input v-model="editShopName" v-if="userDate.isVendor" type="text" placeholder="Изменить название магазина">
-                <input v-model="editShopDesc" v-if="userDate.isVendor" type="text" placeholder="Изменить описание магазина">
-                <input v-model="editBrandName" v-if="userDate.isVendor" type="text" placeholder="Изменить название бренда">
+                <input v-model="editShopName" v-if="isVendor" type="text" placeholder="Изменить название магазина">
+                <input v-model="editShopDesc" v-if="isVendor" type="text" placeholder="Изменить описание магазина">
+                <input v-model="editBrandName" v-if="isVendor" type="text" placeholder="Изменить название бренда">
                 <button class="save_btn" @click.prevent="saveProfile">Сохранить изменения</button>
             </form>
         </div>

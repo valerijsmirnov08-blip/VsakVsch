@@ -1,18 +1,52 @@
 <script setup>
-import { ref } from 'vue';
+import { ref, onMounted, onUnmounted } from 'vue';
 import { RouterLink } from 'vue-router';
 import SearchModal from './SearchModal.vue';
+import { messengerApi } from '@/composables/messengerApi.js';
 
-// Реактивная переменная для хранения города
 const currentCity = ref('Великий Новгород');
+const unreadCount = ref(0);
+let unreadTimer = null;
 
-// Функция для изменения города
 const changeCity = () => {
     const newCity = prompt('Введите ваш город:', currentCity.value);
     if (newCity && newCity.trim() !== '') {
         currentCity.value = newCity.trim();
     }
 };
+
+const checkUnread = async () => {
+    const session = localStorage.getItem('user_session');
+    if (!session) {
+        unreadCount.value = 0;
+        return;
+    }
+    const user = JSON.parse(session);
+    const userId = Number(user.id || user.userId);
+    if (!userId) return;
+
+    try {
+        const conversations = await messengerApi.getConversations(userId);
+        let total = 0;
+        for (const chat of conversations) {
+            if (Array.isArray(chat.messages)) {
+                total += chat.messages.filter(m => !m.isRead && m.senderUser?.id !== userId).length;
+            }
+        }
+        unreadCount.value = total;
+    } catch (e) {
+        console.error('Ошибка проверки непрочитанных сообщений:', e);
+    }
+};
+
+onMounted(() => {
+    checkUnread();
+    unreadTimer = setInterval(checkUnread, 5000);
+});
+
+onUnmounted(() => {
+    if (unreadTimer) clearInterval(unreadTimer);
+});
 </script>
 <template>
     <header>
@@ -30,8 +64,11 @@ const changeCity = () => {
                  </RouterLink>
                 <li class="search_item"><SearchModal /></li>
                 <div class="messedge">
-                    <RouterLink to="/accaunt" class="accaunt-link">
-                    <img class="accaunt_img" src="/Уведомления.png" alt="">
+                    <RouterLink to="/chats" class="accaunt-link">
+                        <div class="icon_wrapper">
+                            <img class="accaunt_img" src="/Уведомления.png" alt="">
+                            <span v-if="unreadCount > 0" class="unread_badge">{{ unreadCount }}</span>
+                        </div>
                         <li>Уведомления</li>
                     </RouterLink>
                 </div>
@@ -113,5 +150,29 @@ const changeCity = () => {
     gap: 8px;
     font-size: 30px !important;
     font-weight: 500;
+}
+.icon_wrapper {
+    position: relative;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.unread_badge {
+    position: absolute;
+    top: -4px;
+    right: -8px;
+    background: #ef4444;
+    color: #ffffff;
+    font-size: 13px;
+    font-weight: 700;
+    min-width: 20px;
+    height: 20px;
+    padding: 0 5px;
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
 }
 </style>

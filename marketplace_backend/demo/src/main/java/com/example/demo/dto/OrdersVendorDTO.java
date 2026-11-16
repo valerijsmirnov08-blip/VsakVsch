@@ -3,7 +3,7 @@ package com.example.demo.dto;
 import java.math.BigDecimal;
 import com.example.demo.entity.OrderItem;
 import com.example.demo.entity.Product;
-
+import java.time.LocalDateTime;
 
 public class OrdersVendorDTO
 {
@@ -12,9 +12,11 @@ public class OrdersVendorDTO
     private Long vendorId;
     private BigDecimal price;
     private int quantity;
+    private String customerName;
+    private LocalDateTime createdAt;
     private String status = "В процессе";
     private Boolean isReviewed = false;
-
+   
     public OrdersVendorDTO(OrderItem order)
     {
         this.id = order.getId();
@@ -24,6 +26,14 @@ public class OrdersVendorDTO
         this.quantity = order.getQuantity();
         this.status = order.getStatus();
         this.isReviewed = order.getIsReviewed();
+         if(order.getOrder() != null)
+        {
+            this.createdAt = order.getOrder().getCreatedAt();
+        }
+        if (order.getOrder().getUser() != null)
+        {
+            this.customerName = order.getOrder().getUser().getUserName();
+        }
         
     }
     public Long getId() {return id;}
@@ -41,6 +51,12 @@ public class OrdersVendorDTO
     public int getQuantity() {return quantity;}
     public void setQuantity(int quantity) {this.quantity = quantity;}
 
+    public String getCustomerName() {return customerName;}
+    public void setCustomerName(String customerName) {this.customerName = customerName;}
+
+    public LocalDateTime getCreatedAt() {return createdAt;}
+    public void setCreatedAt(LocalDateTime createdAt) {this.createdAt = createdAt;}
+    
     public String getStatus() {return status;}
     public void setStatus(String status) {this.status = status;}
 

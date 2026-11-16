@@ -8,7 +8,8 @@
     import VendorRating from '@/components/VendorRating.vue';
     import VendorComplaints from '@/components/VendorComplaints.vue';
     import VendorCreateProduct from '@/components/VendorCreateProduct.vue';
-import VendorEditProduct from '@/components/VendorEditProduct.vue';
+    import VendorEditProduct from '@/components/VendorEditProduct.vue';
+    import VendorOrders from '@/components/VendorOrders.vue';
 
     const currentTab = ref('Главная');
     const currentPage = computed(() => componentMap[currentTab.value]);
@@ -19,12 +20,18 @@ import VendorEditProduct from '@/components/VendorEditProduct.vue';
         'Создать новый товар': VendorCreateProduct,
         'Редактировать': VendorEditProduct,
         'Финансы': VendorFinances,
+        'Заказы': VendorOrders,
         'Статистика': VendorStatistics,
         'Рейтинги': VendorRating,
         'Жалобы': VendorComplaints,
         'Отзывы': VendorReviews
     };
-
+    const selectedProduct = ref(null);
+    const openEditProduct = (id) =>
+    {
+        selectedProduct.value = id;
+        currentTab.value = 'Редактировать';
+    }
 </script>
 <template>
 <nav class="tabs_menu">
@@ -34,6 +41,7 @@ import VendorEditProduct from '@/components/VendorEditProduct.vue';
         <option value = 'Склад'>Склад</option>
         <option value = 'Создать новый товар'>Создать новый товар</option>
     </select>
+    <button @click="currentTab = 'Заказы'" :class="{ active: currentTab === 'Заказы' }">Заказы</button>
     <button @click="currentTab = 'Финансы'" :class="{ active: currentTab === 'Финансы' }">Финансы</button>
     <button @click="currentTab = 'Статистика'" :class="{ active: currentTab === 'Статистика' }">Статистика</button>
     <select @change="currentTab = $event.target.value" required  :class="{ active: currentTab === 'Рейтинги' }">
@@ -44,14 +52,18 @@ import VendorEditProduct from '@/components/VendorEditProduct.vue';
 
     <button @click="currentTab = 'Отзывы'" :class="{ active: currentTab === 'Отзывы' }">Отзывы</button>
 </nav>
-<component :is="currentPage"></component>
+<component 
+:is="currentPage"
+:productId = "selectedProduct"
+@edit-product = "openEditProduct"
+@close = "currentTab = 'Заказы'"></component>
 </template>
 <style scoped>
 .tabs_menu
 {
     display: flex;
     justify-content: center;
-    gap: 100px;
+    gap: 70px;
     font-size: 40px;
     margin-bottom: 30px;
     margin-top: 10px;

@@ -1,6 +1,6 @@
 <script setup>
 import { ref } from 'vue';
-import { Bar } from 'vue-chartjs';
+import { Line } from 'vue-chartjs';
 import { useRoute } from 'vue-router';
 import { onMounted } from 'vue';
 import {
@@ -15,10 +15,10 @@ import {
     PointElement,
     LineController,
     BarController,
-    scales} from 'chart.js';
+    Filler} from 'chart.js';
     ChartJS.register
     (
-        Title, Tooltip, Legend, BarElement, CategoryScale, LineElement, LinearScale,LineController, PointElement, BarController  
+        Title, Tooltip, Legend, BarElement, CategoryScale, LineElement, LinearScale,LineController, PointElement, BarController, Filler  
     )
 
     const chartData = ref({
@@ -57,17 +57,25 @@ const chartOptinos = ref
             {
                 display:false
             }
+        },
+        y:
+        {
+            beginAtZero: true,
+            ticks: {stepSize: 1, precision: 0}
         }
     }
 })
-const fakeBakend =
+const getSalesGradient = ({chart: {ctx, chartArea}}) =>
+{
+    if(!chartArea)
     {
-        'Неделя': {labels: ['Пн', 'Вт', 'Ср', 'Чт', 'Пт', 'Сб', 'Вс'], data: [12, 19, 3, 45, 12, 78, 1]},
-        '2 недели': {labels: ['1', '2', '3', '4', '5', '6', '7', '8', '9', '10', '11', '12', '13', '14'], data: [12, 18, 15, 25, 22, 30, 28, 14, 20, 19, 35, 32, 40, 38]},
-        'Месяц':{labels: ['Неделя 1','Неделя 2','Неделя 3','Неделя 4'], data: [12, 19, 3, 45]},
-        'Год': {labels: ['Янв', 'Фев', 'Мар', 'Апр', 'Май', 'Июн', 'Июл', 'Авг', 'Сен', 'Окт', 'Ноя', 'Дек'], data: [113, 142, 1222, 418, 1, 1132, 122, 13, 122, 1333, 128, 1]}
+        return null;
     }
-
+    const g = ctx.createLinearGradient(0, chartArea.top, 0, chartArea.bottom);
+    g.addColorStop(0, 'rgba(255, 126, 95, 0.5)');
+    g.addColorStop(1, 'rgba(255, 126, 95, 0)');
+    return g;
+}
 const updateChartData = (labels, reviews, sales, brandName) => {
     chartData.value = {
         labels: labels,
@@ -97,6 +105,7 @@ const updateChartData = (labels, reviews, sales, brandName) => {
     };
 };
     const product = ref([]);
+    const loading = ref(true);
     const loadProductsFromVendor = async() =>
 {
     const session = localStorage.getItem('user_session');
@@ -106,13 +115,17 @@ const updateChartData = (labels, reviews, sales, brandName) => {
         return;
         
     }
-    const vendorId = JSON.parse(session);
+    const vendorId = JSON.parse(session).id;
     try
     {
         const response = await fetch(`http://localhost:8080/api/products/vendor/${vendorId}`);
         if(response.ok)
         {
             product.value = await response.json();
+            if(product.value.length > 0)
+            {
+                SelectedProduct(product.value[0]);
+            }
             console.log("Товары с сервера:", product.value);
         }
         else 
@@ -165,11 +178,15 @@ const SelectedProduct = async (item) => {
                         pointBackgroundColor: '#000000'
                     },
                     {
-                        type: 'bar',
+                        type: 'line',
                         label: `Продажи: ${item.brand}`,
                         data: newSales,
-                        backgroundColor: '#ff7e5f',
-                        borderRadius: 4
+                        borderColor: '#ff7e5f',
+                        backgroundColor: getSalesGradient,
+                        fill: true,
+                        tension: 0.4,
+                        pointRadius: 4,
+                        pointBackgroundColor: '#ffffff', pointBorderColor: '#ff7e5f', pointBorderWidth: 3
                     }
                 ]
             };
@@ -190,23 +207,23 @@ onMounted (() =>
 <template>
 <div class="statistics_grid">
         <div  class="products_statistics">
-            <div v-for="item in product " :key="item.id" class="statistics_card" @click="SelectedProduct(item)">
+            <div v-for="item in product " :key="item.id" class="statistics_card" :class="{ active_card: selectProduct?.id === item.id }" @click="SelectedProduct(item)">
                 <div class="card_img_wrap">
-                    <img :src="item.mainImage" alt="" >
+                    <img :src="item.details?.mainImage" alt="" >
                 </div>
                 <div class="card_info">
                     <span class="card_id">Арт. {{ item.id }}</span>
                     <p class="card_brand">{{ item.brand }}</p>
                     <div class="card_stats">
                         <span class="card_rating">⭐ {{ item.rating }}</span>
-                        <span class="card_sales">📈 {{ item.weeklySales }} шт/нед</span>
+                        <span class="card_sales"> {{ item.weeklySales ?? 0 }} шт/нед</span>
                     </div>
                 </div>
             </div>
         </div>
         <div class="statistics_graph">
             <div class="chart_container">
-                <Bar :data="chartData" :options="chartOptinos"/>
+                <Line :data="chartData" :options="chartOptinos"/>
             </div>
         </div>
     </div>
@@ -226,7 +243,7 @@ onMounted (() =>
     display: flex;
     flex-direction: column;
     gap: 15px;
-    height: 50%;
+    height: 100%;
     overflow-y: auto;
     padding-right: 10px;
 }
@@ -259,6 +276,11 @@ onMounted (() =>
 {
     border-color: #ff7e5f;
     box-shadow: 0 4px 12px rgba(255, 126, 95, 0.1);
+}
+.statistics_card.active_card
+{
+    border: 2px solid #ff7e5f;
+    background-color: #fff8f6;
 }
 .card_img_wrap
 {

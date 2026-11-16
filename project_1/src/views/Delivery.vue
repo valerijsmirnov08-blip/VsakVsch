@@ -84,7 +84,7 @@
             
             </div>
             <div class="body_delivery">
-                <img :src="item.product.mainImage" alt="">
+                <img :src="item.product.details?.mainImage" alt="">
                 <p>Модель: {{ item.product.model }}</p>
                 <p>Кол-во: {{ item.quantity }}</p>
                 <p>Цена: {{ item.price }}</p>

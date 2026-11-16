@@ -6,6 +6,8 @@ import jakarta.transaction.Transactional;
 
 import com.example.demo.entity.ProductMonthlyStat;
 import com.example.demo.repository.ProductMonthlyStatRepository;
+
+import java.time.LocalDate;
 import java.util.List;
 
 @Service 
@@ -46,5 +48,13 @@ public class AnalyticsService
                 break;
         }
         return productMonthlyStatRepository.findStatsByVendorAndDate(vendorId, startDate);
+    }
+    public void recordProductSale(Long productId, int quantity)
+    {
+        LocalDate today = LocalDate.now();
+        ProductMonthlyStat stat = productMonthlyStatRepository.findByProductIdAndStatDate(productId, today)
+        .orElseGet(() -> new ProductMonthlyStat(null, productId, today, 0, 0));
+        stat.setSalesCount(stat.getSalesCount() + quantity);
+        productMonthlyStatRepository.save(stat);
     }
 }

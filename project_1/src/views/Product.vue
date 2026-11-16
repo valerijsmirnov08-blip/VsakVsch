@@ -3,6 +3,7 @@
     import { ref, onMounted, computed } from 'vue';
     import { useRoute, useRouter } from 'vue-router';
     import { Heart } from 'lucide-vue-next';
+    import { messengerApi } from '@/composables/messengerApi.js';
     
     const isFavorite = ref(false);
 
@@ -16,6 +17,34 @@
     const activeImage = ref('');
     const productId = route.params.id;
 
+    const currentUser = computed(() =>
+    {
+        const session = localStorage.getItem('user_session');
+        if (!session)
+        {
+            return null;
+        }
+        const parsed = JSON.parse(session);
+        return { ...parsed, id: Number(parsed.id || parsed.userId) };
+    });
+    const contactVendor = async (product) =>
+    {
+        if (!currentUser.value?.id)
+        {
+            router.push('/enter_accaunt');
+            return;
+        }
+
+        const vendorId = product.vendor?.id || product.user?.id || product.vendorId;
+        if (currentUser.value.id === vendorId)
+        {
+            alert('Это ваш собственный товар');
+            return;
+        }
+
+        const chat = await messengerApi.openProductChat(currentUser.value.id, vendorId, product.id);
+        router.push({ path: '/messenger', query: { chatId: chat.id } });
+    };
     onMounted(async () => 
     {
         try
@@ -205,6 +234,12 @@
             <button class="buy_now">Купить сейчас</button>
             <p class="when">{{ product.estimatedDelivery || 'В течение недели'}}</p>
             <p class="rating">{{ product.rating || '0.0'}}</p>
+            <button
+                class="btn-contact-vendor"
+                @click="contactVendor(product)"
+            >
+                Написать продавцу
+            </button>
         </div>
     </div>
 </template>

@@ -1,5 +1,9 @@
 <script setup>
-import { ref, computed, onMounted } from 'vue';
+import { ref,onMounted } from 'vue';
+import { useProductMedia } from '@/composables/useProductMedia';
+import { useVendorProducts } from '@/composables/useVendorProducts';
+
+const emit = defineEmits(['close']);
 
 const props = defineProps({
     productId: {
@@ -7,82 +11,33 @@ const props = defineProps({
         required: true
     }
 });
-const emit = defineEmits(['close']);
 
-const product = ref(null);
-const activeImage = ref('');
-const loading = ref(true);
-const errorMessage = ref('');
+
+const { product, loading, fetchProductById, updateProduct, deleteProduct } = useVendorProducts();
+const { activeImage, isDragover, galleryImages, handleMainImageDrop } = useProductMedia(product);
 
 onMounted(async () => {
-    try {
-        const response = await fetch(`http://localhost:8080/api/products/${props.productId}`);
-        if(!response.ok) throw new Error('Ошибка: товар не найден');
-        
-        product.value = await response.json();
-        
-        if (!product.value.details) {
-            product.value.details = {};
-        }
-
-        if(product.value.details.mainImage) {
-            activeImage.value = '/' + product.value.details.mainImage;
-        }
-    } catch (error) {
-        errorMessage.value = error.message;
-    } finally {
-        loading.value = false;
+    await fetchProductById(props.productId);
+    if (product.value?.details?.mainImage) {
+        activeImage.value = '/' + product.value.details.mainImage;
     }
 });
 
-const galleryImages = computed(() => {
-    if(!product.value || !product.value.details) return [];
-    
-    const images = [];
-    if(product.value.details.mainImage) {
-        images.push('/' + product.value.details.mainImage);
-    }
-    if(product.value.details.gallery && Array.isArray(product.value.details.gallery)) {
-        const extra = product.value.details.gallery.map(img => '/' + img);
-        images.push(...extra);
-    }
-    return images;
-});
-
-const SaveProduct = async() => {
-    const confirmed = confirm("Сохранить внесённые изменения?");
-    if(!confirmed) return;
-    
-    try {
-        const response = await fetch(`http://localhost:8080/api/products/${props.productId}`, {
-            method: 'PUT',
-            headers:{'Content-Type': 'application/json'},
-            body: JSON.stringify(product.value)
-        });
-        if(!response.ok) throw new Error('Ошибка при сохранении');
-        
+const SaveProduct = async () => {
+    if (!confirm("Сохранить внесённые изменения?")) return;
+    if (await updateProduct(props.productId, product.value)) {
         alert('Товар успешно обновлен!');
         emit('close');
-    } catch(error) {
-        errorMessage.value = error.message;
     }
-}
+};
 
-const DeleteProduct = async() => {
-    const confirmed = confirm("ВНИМАНИЕ! Вы точно уверены, что хотите безвозвратно удалить этот товар?");
-    if(!confirmed) return;
-    
-    try {
-        const response = await fetch(`http://localhost:8080/api/products/${props.productId}`, {
-            method: 'DELETE'
-        });
-        if(!response.ok) throw new Error('Ошибка при удалении');
-        
+const DeleteProduct = async () => {
+    if (!confirm("ВНИМАНИЕ! Вы точно уверены, что хотите безвозвратно удалить этот товар?")) return;
+    if (await deleteProduct(props.productId)) {
+        alert('Товар успешно удалён!');
         emit('close');
-    } catch(error) {
-        errorMessage.value = error.message;
     }
-}
+};
 </script>
 
 <template>
@@ -111,8 +66,14 @@ const DeleteProduct = async() => {
                         @click="activeImage = img"
                         alt="Миниатюра">
                 </div>
-                <div class="upload_zone">
+                <div class="upload_zone"
+                :class="{ 'dragover': isDragover }"
+                @dragover.prevent="isDragover = true"
+                @dragleave.prevent="isDragover = false"
+                @drop.prevent = "handleMainImageDrop">
+                <div class="empty_state">
                     <p>+ Добавить фото</p>
+                </div>    
                 </div>
             </div>
 
@@ -153,7 +114,12 @@ const DeleteProduct = async() => {
                     <div class="grid_2col">
                         <div class="input_group">
                             <label>Срок гарантии</label>
-                            <input class="edit_input" v-model="product.details.warranty">
+                            <select class="edit_input" v-model="product.warranty">
+                                <option>Нет</option>
+                                <option>1 месяц</option>
+                                <option>6 месяцев</option>
+                                <option>1 год</option>
+                            </select>
                         </div>
                         <div class="input_group">
                             <label>Ориентировочная доставка</label>
@@ -357,5 +323,13 @@ const DeleteProduct = async() => {
 .btn_delete:hover {
     background: #d32f2f;
     color: #fff;
+}
+.upload_zone.dragover {
+    border-color: #ff7e5f;
+    background-color: #fff3f0;
+    color: #ff7e5f;
+}
+.empty_state {
+    pointer-events: none;
 }
 </style>

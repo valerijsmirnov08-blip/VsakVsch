@@ -7,32 +7,40 @@ const router = useRouter();
 const shopName = ref('');
 const brandName = ref('');
 const ShopDescription = ref('');
+const inn = ref('');
+const legalAddress = ref('');
 
 const userDate = ref(null);
 const errorMessege = ref('');
 
+const isDragover = ref(false);
+const mainImage = ref('');
+const mainImagePreview = ref(null);
+
+
+
 onMounted(() =>
 {
     const session = localStorage.getItem('user_session');
-    if(session)
+    userDate.value = JSON.parse(session);
+    if(!session)
     {
-        userDate.value = JSON.parse(session);
-        if(userDate.value.isVendor)
-        {
+        
             router.push('/enter_accaunt');
-        }else
-        {
-            router.push('/vendor_b');
             
-        }
+            
+    }
+    if(userDate.value.isVendor)
+    {
+        router.push('/accaunt');
     }
 });
 const handleCreateShop = async () =>
 {
     errorMessege.value = '';
-    if(!shopName.value.trim())
+    if(!shopName.value.trim() || !inn.value.trim() || !legalAddress.value.trim())
     {
-        errorMessege.value = "Пожалуйста укажите название вашего магазина";
+        errorMessege.value = "Пожалуйста укажите название вашего магазина, ИНН, адрес";
         return;
     };
     try
@@ -45,13 +53,16 @@ const handleCreateShop = async () =>
             ({
                 shopName: shopName.value.trim(),
                 brandName: brandName.value.trim(),
-                shopDescription: ShopDescription.value.trim()
+                shopDescription: ShopDescription.value.trim(),
+                inn: inn.value.trim(),
+                legalAddress: legalAddress.value.trim(),
+                logoUrl: mainImage.value.trim()
             })
         })
         if(!response.ok)
         {
             const errorData = await response.json().catch(() => ({}));
-            throw new Error (errorData.messege  || "Ошибука ввода данных, повтарите попытку позже");
+            throw new Error (errorData.message  || "Ошибука ввода данных, повтарите попытку позже");
         }
         const updateUser = await response.json();
         userDate.value = updateUser;
@@ -66,6 +77,16 @@ const handleCreateShop = async () =>
     }
 
 }
+    const handleLogoDrop = (a) =>
+    {
+        isDragover.value = false;
+        const file = a.dataTransfer.files?.[0];
+        if(file)
+    {
+        mainImage.value = `/${file.name}`;
+        mainImagePreview.value = URL.createObjectURL(file);
+    }
+    }
 
 </script>
 
@@ -78,6 +99,19 @@ const handleCreateShop = async () =>
                 <input v-model="shopName" class="input_vendor_info" type="text" placeholder="Введите название своего магазина">
                 <input v-model="brandName" class="input_vendor_info" type="text" placeholder="Введите название своего бренда(не обязательно)">
                 <input v-model="ShopDescription" class="input_vendor_info" type="text"  placeholder="Введите описание своего магазина(не обязательно)">
+                <input v-model="inn" class="input_vendor_info" type="text"  placeholder="Введите свой ИНН">
+                <input v-model="legalAddress" class="input_vendor_info" type="text"  placeholder="Введите свой адрес">
+                <div class="logo_image"
+                :class="{dragover:isDragover}"
+                @dragover.prevent="isDragover = true"
+                @dragleave.prevent="isDragover = false"
+                @drop.prevent="handleLogoDrop">
+                <div v-if="!mainImagePreview" class="empty_state">
+                    <img src="" alt="">
+                    <p>Перетащите главное фото</p>
+                </div>
+                <img v-else :src="mainImagePreview" alt="">
+                </div>
                 <p v-if="errorMessege" style="color: red; font-size: 14px; margin: 0;">{{ errorMessege }}</p>
                 <details>
                     <summary class="agreement_vendor">Пользовательское соглашение</summary>
@@ -157,6 +191,24 @@ const handleCreateShop = async () =>
     justify-content: space-between;
     align-items: center;
     user-select: none;
+}
+.logo_image
+{
+    width: 100%;
+    min-height: 140px;
+    border: 2px dashed #ccc;
+    border-radius: 25px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+.logo_image.dragover
+{
+    border-color: #ff7e5f;
+}
+.logo_image img
+{
+    max-height: 120px; border-radius: 15px;
 }
 .vendor_agreement
 {

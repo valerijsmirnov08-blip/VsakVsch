@@ -88,9 +88,16 @@ public class UsersController
         String shopName = body.get("shopName");
         String shopDescription = body.get("shopDescription");
         String brandName = body.get("brandName");
+        String inn = body.get("inn");
+        String legalAddress = body.get("legalAddress");
+        String logoUrl = body.get("logoUrl");
         if(shopName == null || shopName.trim().isEmpty())
         {
             return ResponseEntity.badRequest().body("{\"message\": \"Название магазина не может быть пустым!\"}");
+        }
+        if (inn == null || inn.trim().isEmpty() || legalAddress == null || legalAddress.trim().isEmpty())
+        {
+            return ResponseEntity.badRequest().body("{\"message\": \"ИНН и юридический адрес обязательны!\"}");
         }
         Optional<Users> userOpt = usersRepository.findById(id);
         if(userOpt.isPresent())
@@ -98,19 +105,26 @@ public class UsersController
             Users user = userOpt.get();
             user.setRole(Role.VENDOR);
             Users updatedUser = usersRepository.save(user);
-            updatedUser.setPassword(null);
 
-            VendorProfile vendor = new VendorProfile();
+            VendorProfile vendor = vendorProfileRepository.findByVendor(user)
+            .orElse(new VendorProfile());
                 vendor.setBrandName(brandName);
                 vendor.setShopName(shopName);
-                vendor.setInn(brandName);
-                vendor.setLegalAddress(brandName);
                 vendor.setShopDesc(shopDescription);
                 vendor.setVendor(user);
+                vendor.setInn(inn);
+                vendor.setLegalAddress(legalAddress);
+                vendor.setLogoUrl(logoUrl);
 
-                vendorProfileRepository.save(vendor);
-
-            return  ResponseEntity.ok(updatedUser);
+                try
+                {
+                    vendorProfileRepository.save(vendor);
+                    updatedUser.setPassword(null);
+                    return ResponseEntity.ok(updatedUser);
+                } catch (Exception e)
+                {
+                    return ResponseEntity.status(500).body("{\"message\": \"Ошибка БД: " + e.getMessage() + "\"}");
+                }
             
         }
         return  ResponseEntity.notFound().build();

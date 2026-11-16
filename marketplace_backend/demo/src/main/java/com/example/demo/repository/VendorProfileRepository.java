@@ -11,4 +11,5 @@ import org.springframework.stereotype.Repository;
 public interface VendorProfileRepository extends JpaRepository<VendorProfile, Long>
 {
     Optional<VendorProfile> findByVendor(Users vendor);
+    Optional<VendorProfile> findByVendorId(Long vendorId);
 }
