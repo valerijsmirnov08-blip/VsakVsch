@@ -28,8 +28,11 @@ const changeCity = () => {
                  </RouterLink>
                 <li class="search_item"><SearchModal /></li>
                 <div class="messedge">
-                    <RouterLink to="/accaunt" class="accaunt-link">
-                    <img class="accaunt_img" src="/Уведомления.png" alt="">
+                    <RouterLink to="/chats" class="accaunt-link">
+                        <div class="icon_wrapper">
+                            <img class="accaunt_img" src="/Уведомления.png" alt="">
+                            <span v-if="unreadCount > 0" class="unread_badge">{{ unreadCount }}</span>
+                        </div>
                         <li>Уведомления</li>
                     </RouterLink>
                 </div>
