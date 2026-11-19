@@ -17,6 +17,7 @@ public interface OrderItemRepository extends JpaRepository<OrderItem, Long>
     public List<Orders> findByVendorIdAndStatus(Long vendorId, String status);
     Page<OrderItem> findByVendorId(Long vendorId, Pageable   pageable);
     List<OrderItem> findByOrderUserId(Long userId);
+    void deleteByProduct_Id(Long productId);
 
     @Query(value = "WITH date_series AS ( " +
            "  SELECT generate_series(CAST(:startDate AS DATE), CURRENT_DATE, '1 day'::interval)::date AS date_val " +

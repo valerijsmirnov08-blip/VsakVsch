@@ -33,10 +33,12 @@ const SaveProduct = async () => {
 
 const DeleteProduct = async () => {
     if (!confirm("ВНИМАНИЕ! Вы точно уверены, что хотите безвозвратно удалить этот товар?")) return;
-    if (await deleteProduct(props.productId)) {
-        alert('Товар успешно удалён!');
-        emit('close');
+    if (!response.ok)
+    {
+        const errText = await response.text();
+        throw new Error(errText || 'Ошибка при удалении товара');
     }
+    return true;
 };
 </script>
 

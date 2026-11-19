@@ -4,9 +4,13 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.example.demo.repository.CartRepository;
+import com.example.demo.repository.ConversationRepository;
 import com.example.demo.repository.FavoriteRepository;
+import com.example.demo.repository.OrderItemRepository;
 import com.example.demo.repository.ProductRepository;
+import com.example.demo.repository.ReviewRepository;
 import com.example.demo.dto.ProductCatalogDto;
+import com.example.demo.entity.Conversation;
 import com.example.demo.entity.Product;
 
 import org.springframework.cache.annotation.CacheEvict;
@@ -25,6 +29,12 @@ public class ProductService
     private FavoriteRepository favoriteRepository;
     @Autowired 
     private CartRepository cartRepository;
+    @Autowired
+    private OrderItemRepository orderItemRepository;
+    @Autowired
+    private ReviewRepository reviewRepository;
+    @Autowired
+    private ConversationRepository conversationRepository;
 
     public List<ProductCatalogDto> getAllProducts()
     {
@@ -73,6 +83,13 @@ public class ProductService
     {
         favoriteRepository.deleteByProductId(id);
         cartRepository.deleteByProductId(id);
+        reviewRepository.deleteByProductId(id);
+        orderItemRepository.deleteByProduct_Id(id);
+        List<Conversation> conversations = conversationRepository.findByProductId(id);
+        for (Conversation conv : conversations) {
+            conv.setProduct(null);
+        }
+        conversationRepository.saveAll(conversations);
         productRepository.deleteById(id);
     }
 }

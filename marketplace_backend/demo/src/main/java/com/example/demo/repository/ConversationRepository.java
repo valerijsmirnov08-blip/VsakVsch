@@ -14,4 +14,5 @@ public interface ConversationRepository extends JpaRepository<Conversation, Long
     List<Conversation> findByBuyerIdOrVendorIdOrderByUpdatedAtDesc(Long buyerId, Long vendorId);
 
     Optional<Conversation> findByBuyerIdAndType(Long buyerId, String type);
+    List<Conversation> findByProductId(Long productId);
 }

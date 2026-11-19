@@ -14,4 +14,6 @@ public interface ReviewRepository extends JpaRepository<Review, Long>
     Double findAverageRatingByProductId(@Param("productId") Long productId);
     @Query("SELECT r FROM Review r WHERE r.productId IN (SELECT p.id FROM Product p WHERE p.vendor.id = :vendorId)")
     List<Review> findByVendorId(@Param("vendorId") Long vendorId);
+
+    void deleteByProductId(Long productId);
 }

@@ -4,7 +4,11 @@ import jakarta.persistence.*;
 import java.math.BigDecimal;
 import org.hibernate.annotations.JdbcTypeCode;
 import org.hibernate.type.SqlTypes;
+
+import com.fasterxml.jackson.annotation.JsonIgnore;
+
 import java.util.Map;
+import  java.util.List;
 
 @Entity
 @Table(name = "products")
@@ -37,6 +41,10 @@ public class Product
 
     @Column(name = "vendor_sku")
     private String vendorSku;
+    
+    @JsonIgnore
+    @OneToMany(mappedBy = "product", cascade = CascadeType.REMOVE)
+    private List<OrderItem> orderItems;
 
     @ManyToOne 
     @JoinColumn (name = "category_id", nullable = false)
