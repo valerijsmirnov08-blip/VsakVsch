@@ -1,6 +1,7 @@
 <script setup>
     import {ref, onMounted, computed } from 'vue';
     import { RouterLink } from 'vue-router';
+    import { API_URL } from '@/composables/apiConfig.js';
 
     const searchtext = ref('');
     const categoryId = ref(null);
@@ -21,7 +22,7 @@
 
     const loadCategories = async () =>
     {
-        const response = await fetch(`http://localhost:8080/api/category/roots`)
+        const response = await fetch(`${API_URL}/category/roots`);
         if(response.ok)
         {
            category.value = await response.json(); 
@@ -35,7 +36,7 @@
             searchResult.value = [];
             return;
         }
-            let url = `http://localhost:8080/api/products/search?searchText=${encodeURIComponent(searchtext.value.trim())}`;
+            let url = `${API_URL}/products/search?searchText=${encodeURIComponent(searchtext.value.trim())}`;
             if(categoryId.value !== null)
             {
                 url += `&categoryId=${categoryId.value}`;

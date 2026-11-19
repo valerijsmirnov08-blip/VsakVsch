@@ -4,6 +4,9 @@
     import { useRoute, useRouter } from 'vue-router';
     import { Heart } from 'lucide-vue-next';
     import { messengerApi } from '@/composables/messengerApi.js';
+    import { API_URL } from '@/composables/apiConfig.js';
+    import { getFavorites, toggleFavoriteItem } from '@/composables/productsApi.js';
+    import { updateCartQuantity } from '@/composables/cartApi.js';
     
     const isFavorite = ref(false);
 
@@ -49,7 +52,7 @@
     {
         try
         {
-            const response = await fetch(`http://localhost:8080/api/products/${productId}`);
+            const response = await fetch(`${API_URL}/products/${productId}`);
             if(!response.ok)
             {
                 throw new Error('Ошибка товар не найден');
@@ -60,18 +63,14 @@
                 activeImage.value = product.value.details?.mainImage || '';
             }
             const session = localStorage.getItem('user_session');
-            if(session)
+            if (session)
             {
                 const user = JSON.parse(session);
-               const favResponse = await fetch(`http://localhost:8080/api/favorites/user/${user.id || user.userId}?size=1000`);
-                if(favResponse.ok) {
-                    const data = await favResponse.json();
+                const data = await getFavorites(user.id || user.userId);
+                if (data) {
                     const favoriteItems = data.content || [];
                     const favoriteIds = favoriteItems.map(item => item.product?.id);
-                    
                     isFavorite.value = favoriteIds.includes(Number(productId));
-                } else {
-                    console.error("Сервер вернул ошибку при загрузке избранного");
                 }
             }
         } catch (error)
@@ -115,17 +114,9 @@
     try
     {
         const user = JSON.parse(session);
-         const response = await fetch('http://localhost:8080/api/cart/add', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json'
-            },
-            body: JSON.stringify({
-                userId: Number(user.id || user.userId), 
-                productId: Number(productId),        
-                quantity: 1
-            })
-        })
+        const isAdded = await updateCartQuantity(user.id || user.userId, productId, 1);
+        if (isAdded) alert('Товар добавлен в корзину');
+        else console.error('Ошибка добавления товара в корзину попробуйте позже');
         if(response.ok)
         {
             alert('Товар добавлен в корзину');
@@ -146,32 +137,16 @@
         if(!session)
         {
             alert("Пожалуйста зарегистрируйтесь");
+            return
         }
         const user = JSON.parse(session);
         try
         {
-            const response = await fetch('http://localhost:8080/api/favorites/toggle',{
-                method: 'POST',
-                headers: {'Content-Type': 'application/json'},
-                body: JSON.stringify
-                ({
-                    userId: Number(user.id || user.userId),
-                    productId: Number(productId)
-                })
-
-            })
-            if(response.ok)
-            {
-               const favResponse = await fetch(`http://localhost:8080/api/favorites/user/${user.id || user.userId}?size=1000`);
-                if(favResponse.ok) {
-                    const data = await favResponse.json();
-                    const favoriteItems = data.content || [];
-                    const favoriteIds = favoriteItems.map(item => item.product?.id);
-                isFavorite.value = (await favResponse.text()) === 'true';
-                } else
-            {
-                console.error("Сервер вернул ошибку при обновлении избранного");
-            }
+            const isOk = await toggleFavoriteItem(user.id || user.userId, productId);
+        if (isOk) {
+            isFavorite.value = !isFavorite.value;
+        } else {
+            console.error('Сервер вернул ошибку при обновлении избранного');
         }
         }
         catch(error)

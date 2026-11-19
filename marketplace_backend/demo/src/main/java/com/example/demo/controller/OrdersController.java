@@ -20,7 +20,7 @@ import java.util.HashMap;
 @RestController
 @RequestMapping("/api/orders")
 
-@CrossOrigin(origins = "http://localhost:5173")
+@CrossOrigin(origins = "*")
 
 public class OrdersController
 {

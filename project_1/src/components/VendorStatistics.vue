@@ -2,6 +2,7 @@
 import { ref } from 'vue';
 import { Line } from 'vue-chartjs';
 import { useRoute } from 'vue-router';
+import { API_URL } from '@/composables/apiConfig.js';
 import { onMounted } from 'vue';
 import {
     Chart as ChartJS,
@@ -118,7 +119,7 @@ const updateChartData = (labels, reviews, sales, brandName) => {
     const vendorId = JSON.parse(session).id;
     try
     {
-        const response = await fetch(`http://localhost:8080/api/products/vendor/${vendorId}`);
+        const response = await fetch(`${API_URL}/products/vendor/${vendorId}`);
         if(response.ok)
         {
             product.value = await response.json();
@@ -154,7 +155,7 @@ const selectProduct = ref([]);
 const SelectedProduct = async (item) => {
     selectProduct.value = item;
     try {
-        const response = await fetch(`http://localhost:8080/api/analytics/product/${item.id}`);
+        const response = await fetch(`${API_URL}/analytics/product/${item.id}`);
         if(response.ok) {
             const data = await response.json();
             console.log("Данные для графика: ", data);

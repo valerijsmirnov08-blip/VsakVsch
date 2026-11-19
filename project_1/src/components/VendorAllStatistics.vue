@@ -3,6 +3,7 @@ import { ref } from 'vue';
 import { Line } from 'vue-chartjs';
 import { useRoute } from 'vue-router';
 import { onMounted } from 'vue';
+import { API_URL } from '@/composables/apiConfig.js';
 import 
 {
    Chart as ChartJS,
@@ -97,7 +98,7 @@ const updateChart = async(period) =>
     const vendorId = vendorData.id;
     try
     {
-    const response = await fetch(`http://localhost:8080/api/orders/vendor/${vendorId}/chart?period=${encodeURIComponent(period)}`);
+    const response = await fetch(`${API_URL}/orders/vendor/${vendorId}/chart?period=${encodeURIComponent(period)}`);
     if(response.ok)
     {
         const data = await response.json();
@@ -157,7 +158,7 @@ const loadSummaryStats = async() =>
     const vendorId = JSON.parse(session).id;
     try
     {
-        const response = await fetch(`http://localhost:8080/api/orders/vendor/${vendorId}/summary-stats`);
+        const response = await fetch(`${API_URL}/orders/vendor/${vendorId}/summary-stats`);
         if(response.ok)
         {
             summaryStats.value = await response.json();

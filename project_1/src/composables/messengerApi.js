@@ -1,4 +1,5 @@
-const BASE_URL = 'http://localhost:8080/api/messenger';
+import { API_URL } from './apiConfig.js';
+const BASE_URL = `${API_URL}/messenger`;
 
 export const  messengerApi =
 {

@@ -19,7 +19,7 @@ import com.example.demo.service.MessengerService;
 
 @RestController
 @RequestMapping("/api/messenger")
-@CrossOrigin(origins = "http://localhost:5173")
+@CrossOrigin(origins = "*")
 public class MessengerController
 {
     @Autowired 

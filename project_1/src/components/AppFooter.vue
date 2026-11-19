@@ -1,6 +1,6 @@
 <script setup>
 import { ref, onMounted } from 'vue'
-
+import { API_URL } from '@/composables/apiConfig.js';
 
 const windowHelp = ref(false);
 const chatMesseges = ref([]);
@@ -31,7 +31,7 @@ onMounted(() => {
         try
         {
             
-            const response = await fetch('http://localhost:8080/api/chat/bot',
+            const response = await fetch(`${API_URL}/chat/bot`,
                 {
                     method: 'POST',
                     headers: {'Content-Type': 'application/json'},
@@ -73,7 +73,7 @@ onMounted(() => {
         }
         try
         {
-            const response = await fetch(`http://localhost:8080/api/chat/history/${userId.value}`)
+            const response = await fetch(`${API_URL}/chat/history/${userId.value}`)
             if(response.ok)
             {
                 const history = await response.json();

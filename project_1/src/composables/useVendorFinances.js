@@ -1,4 +1,5 @@
 import {ref} from 'vue';
+import { API_URL } from './apiConfig.js';
 
 export function useVendorFinances()
 {
@@ -32,8 +33,8 @@ export function useVendorFinances()
         try
         {
            const [summaryRes, payoutsRes] = await Promise.all([
-                fetch(`http://localhost:8080/api/finances/summary/${vendorId}`),
-                fetch(`http://localhost:8080/api/finances/payouts/${vendorId}`)
+                fetch(`${API_URL}/finances/summary/${vendorId}`),
+                fetch(`${API_URL}/finances/payouts/${vendorId}`)
             ]);
             if (!summaryRes.ok) throw new Error('Ошибка загрузки баланса');
             if (!payoutsRes.ok) throw new Error('Ошибка загрузки истории выплат');
@@ -61,7 +62,7 @@ export function useVendorFinances()
         try
         {
             
-            const response = await fetch(`http://localhost:8080/api/finances/payout/${vendorId}`,
+            const response = await fetch(`${API_URL}/finances/payout/${vendorId}`,
                 {
                     method: 'POST'
                 })

@@ -3,6 +3,7 @@
     import router from '@/router';
     import { onMounted } from 'vue';
     import { Heart } from 'lucide-vue-next';
+    import { API_URL } from '@/composables/apiConfig.js';
        
     const pendingRemovals = ref([]);
     const removalTimers = {};
@@ -31,7 +32,7 @@
     try
     {
       const pageForSpring = currentPage.value - 1;
-        const response = await fetch(`http://localhost:8080/api/favorites/user/${userId}?page=${pageForSpring}&size=${pageSize.value}`)
+        const response = await fetch(`${API_URL}/favorites/user/${userId}?page=${pageForSpring}&size=${pageSize.value}`)
         if(response.ok)
         {
             const data = await response.json();
@@ -97,7 +98,7 @@ const toggleFavorite = async (productId) =>
         const user = JSON.parse(session);
         try
         {
-            const response = await fetch('http://localhost:8080/api/favorites/toggle',
+            const response = await fetch(`${API_URL}/favorites/toggle`,
             {
                 method: 'POST',
                 headers: {'Content-Type': 'application/json'},

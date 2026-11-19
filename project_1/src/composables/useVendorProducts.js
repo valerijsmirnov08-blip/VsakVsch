@@ -1,6 +1,7 @@
-import { ref } from "vue";
+import { ref } from 'vue';
+import { API_URL } from './apiConfig.js';
 
-const API_BASE = 'http://localhost:8080/api/products';
+const API_BASE = `${API_URL}/products`;
 
 export function useVendorProducts()
 {

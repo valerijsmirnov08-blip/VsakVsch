@@ -1,6 +1,7 @@
 <script setup>
 import { isVNode, onMounted, ref } from 'vue'
 import {useRouter} from 'vue-router';
+import { API_URL } from '@/composables/apiConfig.js';
 
 const router = useRouter();
 
@@ -45,7 +46,7 @@ const handleCreateShop = async () =>
     };
     try
     {
-        const response = await fetch(`http://localhost:8080/api/users/${userDate.value.id}/become_vendor`,
+        const response = await fetch(`${API_URL}/users/${userDate.value.id}/become_vendor`,
         {
             method: 'POST',
             headers: {'Content-Type': 'application/json'},

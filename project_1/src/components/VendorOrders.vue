@@ -1,6 +1,7 @@
 <script setup>
 import { ref, onMounted, computed, onUnmounted } from 'vue';
 import router from '@/router';
+import { API_URL } from '@/composables/apiConfig.js';
 
 const emit = defineEmits(['edit-product']);
 
@@ -30,7 +31,7 @@ const LoadProducts =  async() =>
    try
     {
         const pageForSpring = currentPage.value - 1;
-        const response = await fetch(`http://localhost:8080/api/orders/vendor/${vendorId}?page=${pageForSpring}&size=${pageSize.value}`)
+        const response = await fetch(`${API_URL}/orders/vendor/${vendorId}?page=${pageForSpring}&size=${pageSize.value}`)
         if(response.ok)
         {
             const data = await response.json();
@@ -85,7 +86,7 @@ const updateStatus = async(itemId, newStatus) =>
 {
     try
     {
-        const response = await fetch(`http://localhost:8080/api/orders/items/${itemId}/status`,
+        const response = await fetch(`${API_URL}/orders/items/${itemId}/status`,
         {
             method: 'PUT',
             headers: { 'Content-Type': 'text/plain;charset=UTF-8' },

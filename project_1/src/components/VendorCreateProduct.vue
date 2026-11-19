@@ -4,6 +4,7 @@ import { useRouter } from 'vue-router';
 import { useCatalogSpecs } from '@/composables/useCatalogSpecs';
 import ProductSpecsEditor from '@/components/ProductSpecsEditor.vue';
 import { useVendorProducts } from '@/composables/useVendorProducts';
+import { API_URL } from '@/composables/apiConfig.js';
 
 const emit = defineEmits(['close']); 
 const { createProduct, getVendorId } = useVendorProducts();
@@ -116,7 +117,7 @@ const submitProduct = async () => {
 };
 const loadCategory = async() =>
 {
-    const response = await fetch('http://localhost:8080/api/category/roots');
+    const response = await fetch(`${API_URL}/category/roots`);
     if (response.ok) categories.value = await response.json();
 }
 onMounted(() =>  {
@@ -213,7 +214,9 @@ onMounted(() =>  {
                         <label>Артикул</label>
                         <input v-model="vendorSku" type="text" class="mega_input" placeholder="Придумайте свой уникапльный артикул">
                     </div>
-                    <div class="info_group third">
+                    
+                </div>
+                <div class="info_group third">
                         <label>Срок гарантии</label>
                         <select v-model="warranty" class="mega_input select">
                             <option>Нет</option>
@@ -222,7 +225,6 @@ onMounted(() =>  {
                             <option>1 год</option>
                         </select>
                     </div>
-                </div>
                 <div class="color_picker_block">
                     <label class="color_block_label">
                         Цвет товара: <span class="selected_color_text">{{ selectedBaseColor }}</span>

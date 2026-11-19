@@ -1,6 +1,7 @@
 <script setup>
 import { ref } from 'vue';
 import { useRouter } from 'vue-router';
+import { API_URL } from '@/composables/apiConfig.js';
 
 const router = useRouter();
 
@@ -24,7 +25,7 @@ const handleRegister = async () => {
     }
 
     try {
-        const response = await fetch('http://localhost:8080/api/user/register', {
+        const response = await fetch(`${API_URL}/user/register`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({

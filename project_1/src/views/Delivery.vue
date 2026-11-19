@@ -1,6 +1,7 @@
 <script setup>
     import { onMounted, ref } from 'vue'
     import {useRouter} from 'vue-router';
+    import { API_URL } from '@/composables/apiConfig.js';
 
     const product = ref([]);
     const loading = ref(true);
@@ -18,7 +19,7 @@
         const user = JSON.parse(session);
         try
         {
-            const response = await fetch(`http://localhost:8080/api/orders/user/${user.id}/items`)
+            const response = await fetch(`${API_URL}/orders/user/${user.id}/items`)
             if(response.ok)
             {
                 product.value = await response.json();
@@ -45,7 +46,7 @@
         }
         try
         {
-            const response = await fetch(`http://localhost:8080/api/orders/items/${item.id}/status`,
+            const response = await fetch(`${API_URL}/orders/items/${item.id}/status`,
             {
                 method: 'PUT',
                 headers: { 'Content-Type': 'text/plain; charset=UTF-8' },

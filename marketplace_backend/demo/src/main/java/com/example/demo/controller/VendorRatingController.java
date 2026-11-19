@@ -14,7 +14,7 @@ import com.example.demo.service.VendorRatingService;
 
 @RestController 
 @RequestMapping ("api/vendor-rating")
-@CrossOrigin(origins = "http://localhost:5173")
+@CrossOrigin(origins = "*")
 public class VendorRatingController
 {
     @Autowired 

@@ -2,6 +2,7 @@
 import { ref } from 'vue';
 import { stringifyQuery, useRouter } from 'vue-router';
 import { errorMessages } from 'vue/compiler-sfc';
+import { API_URL } from '@/composables/apiConfig.js';
 
 const router = useRouter();
 
@@ -24,7 +25,7 @@ const handleLogin = async () =>
     }
   try
   {
-    const response = await fetch('http://localhost:8080/api/users/login',{
+    const response = await fetch(`${API_URL}/users/login`,{
       method: "POST",
       headers: {'Content-Type': 'application/json'},
       body: JSON.stringify({

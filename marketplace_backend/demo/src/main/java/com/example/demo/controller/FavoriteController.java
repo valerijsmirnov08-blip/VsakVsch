@@ -22,7 +22,7 @@ import jakarta.transaction.Transactional;
 
 @RestController 
 @RequestMapping ("/api/favorites")
-@CrossOrigin(origins = "http://localhost:5173")
+@CrossOrigin(origins = "*")
 public class FavoriteController
 {
     @Autowired 

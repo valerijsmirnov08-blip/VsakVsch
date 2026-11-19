@@ -1,81 +1,100 @@
 <script setup>
-import {ref, onMounted, onUnmounted} from 'vue';
+import { ref, nextTick, onMounted, onUnmounted } from 'vue';
 import { useRoute } from 'vue-router';
-import {messengerApi} from '@/composables/messengerApi.js'
+import { messengerApi } from '@/composables/messengerApi.js';
+import { messengerSocket } from '@/composables/messengerSocket.js';
+
 const session = localStorage.getItem('user_session');
 const parsedUser = session ? JSON.parse(session) : null;
 const currentUser = ref(
     parsedUser ? { ...parsedUser, id: Number(parsedUser.id || parsedUser.userId) } : null
 );
+
 const conversations = ref([]);
 const activeChat = ref(null);
 const messages = ref([]);
 const newMessageText = ref('');
-let pollTimer = null;
 const route = useRoute();
 
-const loadConversations = async() =>
-{
-    if(!currentUser.value?.id)
-    {
+const scrollToBottom = async () => {
+    await nextTick();
+    const area = document.querySelector('.messeges_area');
+    if (area) {
+        area.scrollTop = area.scrollHeight;
+    }
+};
+
+const loadConversations = async () => {
+    if (!currentUser.value?.id) {
         return;
     }
     conversations.value = await messengerApi.getConversations(currentUser.value.id);
-}
-const selectChat = async(chat) =>
-{
+};
+
+const selectChat = async (chat) => {
     activeChat.value = chat;
     messages.value = await messengerApi.getMessege(chat.id, currentUser.value.id);
-}
-const handleSend = async() =>
-{
+    await scrollToBottom();
+    messengerSocket.markAsRead(chat.id, currentUser.value.id);
+    messengerSocket.subscribeToChat(chat.id, {
+        onMessage: async (incomingMsg) => {
+            if (!messages.value.some((m) => m.id === incomingMsg.id)) {
+                messages.value.push(incomingMsg);
+                await scrollToBottom();
+            }
+
+            const senderId = incomingMsg.senderUser?.id;
+            if (senderId !== currentUser.value.id) {
+                messengerSocket.markAsRead(chat.id, currentUser.value.id);
+            }
+
+            await loadConversations();
+        },
+        onRead: (event) => {
+            if (event.readerId !== currentUser.value.id) {
+                messages.value.forEach((msg) => {
+                    if (msg.senderUser?.id === currentUser.value.id) {
+                        msg.isRead = true;
+                    }
+                });
+            }
+        }
+    });
+};
+
+const handleSend = () => {
     const text = newMessageText.value.trim();
-    if(!text || !activeChat.value)
-    {
+    if (!text || !activeChat.value) {
         return;
     }
-    const saved = await messengerApi.sendMessege
-    (
+
+    const sent = messengerSocket.sendMessage(
         activeChat.value.id,
         currentUser.value.id,
-        text       
+        text
     );
-    messages.value.push(saved);
-    newMessageText.value = '';
+
+    if (sent) {
+        newMessageText.value = '';
+    }
+};
+
+onMounted(async () => {
+    messengerSocket.connect();
     await loadConversations();
-}
-onMounted( async () =>
-{
-    await loadConversations();
+
     const targetChatId = Number(route.query.chatId);
-    if(targetChatId)
-    {
-        const found = conversations.value.find(c => c.id === targetChatId);
-        if(found)
-        {
+    if (targetChatId) {
+        const found = conversations.value.find((c) => c.id === targetChatId);
+        if (found) {
             await selectChat(found);
         }
     }
-    pollTimer = setInterval(async () =>
-    {
-        await loadConversations();
-        if(activeChat.value)
-        {
-            messages.value = await messengerApi.getMessege
-            (
-                activeChat.value.id,
-                currentUser.value.id
-            );
-        }
-    }, 3000);  
-})
-onUnmounted(() =>
-{
-    if(pollTimer)
-    {
-        clearInterval(pollTimer);
-    }
-})
+});
+
+onUnmounted(() => {
+    messengerSocket.disconnect();
+});
 </script>
 <template>
     <div class="messenger_container">

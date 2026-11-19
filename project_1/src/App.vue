@@ -5,6 +5,7 @@ import AppFooter from '@/components/AppFooter.vue';
 import SupportChat from './components/SupportChat.vue';
 import router from './router.ts';
 import AppDeshBoardHeader from './components/AppDeshBoardHeader.vue';
+import GlobalNotify from '@/components/GlobalNotify.vue';
 </script>
 <template>
   <div class="app-layout">
@@ -12,6 +13,7 @@ import AppDeshBoardHeader from './components/AppDeshBoardHeader.vue';
       <AppHeader v-else/>
     <main class="main-content">
       <RouterView />
+      <GlobalNotify />
     </main>
       <AppFooter />
   </div>

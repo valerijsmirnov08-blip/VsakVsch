@@ -2,6 +2,8 @@
     import{ref, onMounted, onUnmounted} from 'vue'
     import { RouterLink } from 'vue-router'
     import { Heart } from 'lucide-vue-next';
+    import {getProducts, getFavorites, toggleFavoriteItem} from '@/composables/productsApi.js';
+    import { updateCartQuantity } from '@/composables/cartApi.js';
        
     const favoriteIds = ref([]);
 
@@ -19,27 +21,12 @@
 {
     try
     {
-      const pageForSpring = currentPage.value - 1;
-        const response = await fetch(`http://localhost:8080/api/products?page=${pageForSpring}&size=${pageSize.value}`)
-        if(response.ok)
-        {
-            const data = await response.json();
-            console.log("Данные от бэкенда:", data);
-            if(data.content)
-            {
-              products.value = [...products.value, ...data.content];
-              totalElement.value = data.totalElements;
-            }
-            else
-            {
-                products.value = data;
-                totalElement.value = data.length;
-            }
-        } 
-        else
-        {
-            console.error("Сервер вернул ошибку:", response.status);
-        }  
+        const pageForSpring = currentPage.value - 1;
+        const data = await getProducts(pageForSpring, pageSize.value);
+        if (data) {
+            products.value = data.content ? [...products.value, ...data.content] : data;
+            totalElement.value = data.content ? data.totalElements : data.length;
+        }
     } catch (error) 
     {
         console.error('Ошибка связи с сервером Java:', error)
@@ -76,25 +63,9 @@ const addToCartFromCatalog = async (productId) =>
     try
     {
         const user = JSON.parse(session);
-         const response = await fetch('http://localhost:8080/api/cart/add', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json'
-            },
-            body: JSON.stringify({
-                userId: Number(user.id || user.userId), 
-                productId: Number(productId),        
-                quantity: 1
-            })
-        })
-        if(response.ok)
-        {
-            alert('Товар добавлен в корзину');
-        }
-        else
-        {
-            console.error("Ошибка добавления товара в корзину попробуйте позже")
-        }
+        const isAdded = await updateCartQuantity(user.id || user.userId, productId, 1);
+        if (isAdded) alert('Товар добавлен в корзину');
+        else console.error('Ошибка добавления товара в корзину попробуйте позже');
     }
     catch(error)
     {
@@ -117,15 +88,10 @@ const toggleFavorite = async (productId) =>
     } else {
         favoriteIds.value.push(productId);
     }
-    try {
-        await fetch('http://localhost:8080/api/favorites/toggle', {
-            method: 'POST',
-            headers: {'Content-Type': 'application/json'},
-            body: JSON.stringify({
-                userId: Number(user.id || user.userId),
-                productId: Number(productId)
-            })
-        });
+    try
+    {
+        const isOk = await toggleFavoriteItem(user.id || user.userId, productId);
+        if (!isOk) alert('Ошибка обновления избранного');
     } catch (error) {
         console.error("Ошибка сети при обновлении избранного:", error);
     }
@@ -139,13 +105,11 @@ const toggleFavorite = async (productId) =>
       const currentUserId = user.id || user.userId;
 
       try {
-          const response = await fetch(`http://localhost:8080/api/favorites/user/${currentUserId}?size=1000`);
-          if (response.ok)
-          {
-            const data = await response.json();
+         const data = await getFavorites(currentUserId);
+         if (data) {
             const favoriteItems = data.content || [];
             favoriteIds.value = favoriteItems.map(item => item.product?.id);
-          }
+        }
       } catch (error) {
           console.error('Ошибка загрузки избранного:', error);
       }

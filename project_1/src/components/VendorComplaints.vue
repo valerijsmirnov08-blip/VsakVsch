@@ -1,6 +1,6 @@
 <script setup>
     import {computed, ref, onMounted} from 'vue';
-
+    import { API_URL } from '@/composables/apiConfig.js';
 
     const complaints = ref([]);
     const filter = ref('Все');
@@ -18,7 +18,7 @@
         const vendorId = user.id;
         try
         {
-            const response  = await fetch(`http://localhost:8080/api/reviews/vendor/${vendorId}`)
+            const response  = await fetch(`${API_URL}/reviews/vendor/${vendorId}`)
             if(response.ok)
             {
                 const compData = await response.json();
@@ -60,7 +60,7 @@
 
     const changeComplaintStatus = async (item, newStatusStr) => {
         try {
-            const response = await fetch(`http://localhost:8080/api/reviews/update-complaint-status`, {
+            const response = await fetch(`${API_URL}/reviews/update-complaint-status`, {
                 method: 'PUT',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({

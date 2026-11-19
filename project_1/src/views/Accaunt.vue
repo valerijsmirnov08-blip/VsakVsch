@@ -1,180 +1,128 @@
 <script setup>
-    import { onMounted, ref, computed } from 'vue'
-    import {useRouter} from 'vue-router';
-    const router = useRouter();
-    
+import { onMounted, ref, computed } from 'vue';
+import { useRouter } from 'vue-router';
+import SupportChat from '@/components/SupportChat.vue';
+import { notify } from '@/composables/useNotify.js';
+import { API_URL } from '@/composables/apiConfig.js'
 
-    const windowHelp = ref(false);
-    const chatMesseges = ref([]);
-    const isBotTyping = ref(false);
+const router = useRouter();
 
-    const editName = ref('');
-    const editShopName = ref('');
-    const editShopDesc = ref('');
-    const editBrandName = ref('');
-    
+const isEditing = ref(false);
+const editName = ref('');
+const editShopName = ref('');
+const editShopDesc = ref('');
+const editBrandName = ref('');
+const editInn = ref('');
+const editLegalAddress = ref('');
+const editLogoUrl = ref('');
+const vendorRating = ref(0);
 
-    const isVendor = computed(() => userDate.value?.role === 'VENDOR');
-    const userDate = ref(null);
-    const userId = ref('');
+const userDate = ref(null);
+const userId = ref('');
 
-    const errorMessage = ref('');
-    onMounted(() => 
-    {
-        const session = localStorage.getItem('user_session');
+const isVendor = computed(() => userDate.value?.role === 'VENDOR');
 
-        if(session)
-        {
-            userDate.value = JSON.parse(session);
-            editName.value = userDate.value.userName;
-            editShopName.value = userDate.value.ShopName || '';
-            editShopDesc.value = userDate.value.ShopDescription || '';
-            editBrandName.value = userDate.value.brandName || '';
-            userId.value = userDate.value.id || userDate.value.userId;
-        }else
-        {
-            router.push('/enter_accaunt')
-        }
-    })
-
-    const windowHelpBot = () =>
-    {
-        windowHelp.value = !windowHelp.value; 
-        loadChatHistory();
-    }
-    const sendMessegeForBot = async(text) =>
-    {
-        chatMesseges.value.push
-        ({
-            id: Date.now(),
-            sender: 'user',
-            text: text
-        })
-        isBotTyping.value = true;
-        try
-        {
-            
-            const response = await fetch('http://localhost:8080/api/chat/bot',
-                {
-                    method: 'POST',
-                    headers: {'Content-Type': 'application/json'},
-                    body: JSON.stringify({message: text, userId: userId.value})
-                })
-            if(response.ok)
-            {
-                const data = await response.json();
-               
-                   chatMesseges.value.push
-                   ({
-                        id: Date.now() + 1,
-                        sender: 'bot',
-                        text: data.reply
-                   })
-    
-
-            }
-            else
-            {
-                console.error("Ошибка сервера:", response.status);
-            }
-        }
-        catch(error)
-        {
-            console.error("Ошибка связи с сервером:", error);
-        }
-        finally
-        {
-            isBotTyping.value = false;
-        }
-    }
-    
-    const loadChatHistory = async() =>
-    {
-        if(!userId.value)
-        {
-            return;
-        }
-        try
-        {
-            const response = await fetch(`http://localhost:8080/api/chat/history/${userId.value}`)
-            if(response.ok)
-            {
-                const history = await response.json();
-                chatMesseges.value = history;
-                if (chatMesseges.value.length === 0) {
-                chatMesseges.value.push({
-                    id: Date.now(),
-                    sender: 'bot',
-                    text: 'Здравствуйте! Что у вас случилось?'
-                });
-            }
-            }
-        
-            }
-        catch(error)
-        {
-            console.error("Ошибка загрузки истории:", error);
-        }
-       
-    }
-    const handleLogout = () => 
-    {
-        const confirmed = confirm("Выйти из аккаунта?");
-        if(!confirmed)
-        {
-            return;
-        }
-        localStorage.removeItem('user_session');
-        userDate.value = null;
-        router.push('/enter_accaunt')
-    };
-
-    const saveProfile = async() =>
-    {
-        const confirmed = confirm("Сохранить внесённые изменения?");
-        if(!confirmed)
-        {
-            return;
-        }
-        try
-        {
-            const response = await fetch(`http://localhost:8080/api/user/${userId.value}`,
-                {
-                    method: 'POST',
-                    headers: {'Content-Type': 'application/json'},
-                    body: JSON.stringify
-                    ({
-                        shopName: editShopName.value.trim(),
-                        shopDescription: editShopDesc.value.trim(),
-                        userName: editName.value.trim(),
-                        brandName: editBrandName.value.trim()
-                    })
-
-                })
-            if(!response.ok)
-            {
-                const errorData = await response.json().catch(() => ({}));
-                throw new Error (errorData.messege  || "Ошибука ввода данных, повтарите попытку позже");
-            }
-            const updateUser = await response.json();
-            localStorage.setItem('user_session', JSON.stringify(updateUser));
-            userDate.value = updateUser;
-            alert("Профиль успешно обновлен!");
-        }
-        catch(error)
-        {
-
-        }
-    }
-    const stopVendor = async () => {
-
-    const confirmed = confirm("Пересать быть продавцом(вы всё потеряете)?");
-    if(!confirmed)
-    {
-        return;
-    }
+const loadVendorProfile = async (id) => {
     try {
-        const response = await fetch(`http://localhost:8080/api/users/${userId.value}/stop_vendor`, {
+        const response = await fetch(`${API_URL}/users/${id}/vendor-profile`);
+        if (response.ok) {
+            const vp = await response.json();
+            editShopName.value = vp.shopName || '';
+            editShopDesc.value = vp.shopDescription || '';
+            editBrandName.value = vp.brandName || '';
+            editInn.value = vp.inn || '';
+            editLegalAddress.value = vp.legalAddress || '';
+            editLogoUrl.value = vp.logoUrl || '';
+            vendorRating.value = vp.ratingVendor ?? 0;
+        }
+    } catch (error) {
+        console.error('Ошибка загрузки профиля продавца:', error);
+    }
+};
+
+onMounted(async () => {
+    const session = localStorage.getItem('user_session');
+    if (session) {
+        userDate.value = JSON.parse(session);
+        editName.value = userDate.value.userName || '';
+        userId.value = userDate.value.id || userDate.value.userId;
+        if (userDate.value.role === 'VENDOR' && userId.value) {
+            await loadVendorProfile(userId.value);
+        }
+    } else {
+        router.push('/enter_accaunt');
+    }
+});
+
+const handleLogout = async () => {
+    const confirmed = await notify.confirm({
+        title: 'Выход из аккаунта',
+        message: 'Вы действительно хотите выйти из своего профиля?',
+        confirmText: 'Выйти',
+        cancelText: 'Остаться'
+    });
+    if (!confirmed) return;
+
+    localStorage.removeItem('user_session');
+    userDate.value = null;
+    notify.info('Вы вышли из аккаунта');
+    router.push('/enter_accaunt');
+};
+
+const saveProfile = async () => {
+    const confirmed = await notify.confirm({
+        title: 'Сохранение изменений',
+        message: 'Применить обновлённые данные профиля?',
+        confirmText: 'Сохранить',
+        cancelText: 'Отмена'
+    });
+    if (!confirmed) return;
+
+    try {
+        const response = await fetch(`${API_URL}/user/${userId.value}`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                shopName: editShopName.value.trim(),
+                shopDescription: editShopDesc.value.trim(),
+                userName: editName.value.trim(),
+                brandName: editBrandName.value.trim(),
+                inn: editInn.value.trim(),
+                legalAddress: editLegalAddress.value.trim(),
+                logoUrl: editLogoUrl.value.trim()
+            })
+        });
+
+        if (!response.ok) {
+            const errorData = await response.json().catch(() => ({}));
+            throw new Error(errorData.message || errorData.messege || 'Ошибка ввода данных, повторите попытку позже');
+        }
+
+        const updateUser = await response.json();
+        localStorage.setItem('user_session', JSON.stringify(updateUser));
+        userDate.value = updateUser;
+        if (isVendor.value) {
+            await loadVendorProfile(userId.value);
+        }
+        notify.success('Профиль успешно обновлён!');
+        isEditing.value = false;
+    } catch (error) {
+        notify.error(error.message || 'Ошибка соединения с сервером');
+    }
+};
+
+const stopVendor = async () => {
+    const confirmed = await notify.confirm({
+        title: 'Закрытие магазина',
+        message: 'Вы уверены, что хотите перестать быть продавцом? Все данные витрины будут скрыты.',
+        confirmText: 'Перестать быть продавцом',
+        cancelText: 'Отмена',
+        danger: true
+    });
+    if (!confirmed) return;
+
+    try {
+        const response = await fetch(`${API_URL}/users/${userId.value}/stop_vendor`, {
             method: 'POST'
         });
 
@@ -182,391 +130,556 @@
             const updatedUser = await response.json();
             localStorage.setItem('user_session', JSON.stringify(updatedUser));
             userDate.value = updatedUser;
-            alert("Вы больше не являетесь продавцом");
+            notify.info('Статус продавца отключён');
         } else {
-            alert("Ошибка при обновлении статуса");
+            notify.error('Ошибка при обновлении статуса');
         }
     } catch (error) {
-        console.error("Ошибка соединения:", error);
+        notify.error('Ошибка соединения с сервером');
     }
 };
-    </script>
-<template>  
-    <div v-if="userDate" class="main_Accaunt">
-        <h1>Здравствуйте, {{ userDate.userName }}!</h1>
-        <div class="content_wrapper">
-             <div class="profil_container">
-            
-            <div class="profil_links">
-                <img src="/Избранное.png" alt="">
-                <RouterLink to="/favorites">Избранное</RouterLink>
-            </div>
-            <div class="profil_links">
-                <img src="/Покупки.png" alt="">
-                <RouterLink to="/reviews">Покупки и отзывы</RouterLink>
-            </div>
-            <div class="profil_links">
-                <img src="/Коробка_доставка.png" alt="">
-                <RouterLink to="/delivery">Доставка</RouterLink>
-            </div>
-            <div v-if="!isVendor" class="profil_links">
-                <img src="/Продавец_ЧБ.png" alt="">
-                <RouterLink to="/vendor_b">Стать продавцом</RouterLink>
-            </div>
-            <div v-if="isVendor" class="profil_links" @click="stopVendor">
-                <img src="/Продавец_ЧБ.png" alt="">
-                <a href="#" @click.prevent>Перестать быть продавцом</a>
-            </div>
-            <div v-if="isVendor" class="profil_links">
-                <img src="/СтатистикаПродавец_ЧБ.png" alt="">
-                <RouterLink to="/vendor_dash_board">Панель продавца</RouterLink>
-            </div>
-            <div class="profil_links">
-                <img src="/Работа.png" alt="">
-                <a class="accaunt_work" href ="">Работа на складе/<wbr>Пункте выдачи</a>
-            </div>
-            <div class="profil_links">
-                <img src="/Поддержка.png" alt="">
-                <p @click="windowHelpBot" href="">Поддержка</p>
-            </div>
-            <div v-if="windowHelp" class="windowChat">
-                <div class="chat_head">
-                    <h3>Поддержка</h3>
-                    <button @click="windowHelpBot" class="close_bot">✖</button>
-                </div>
-                <div class="chat_messeges">
-                    <div v-for="msg in chatMesseges" :key = "msg.id" :class="['bot_messeges', msg.sender === 'bot' ? 'bot_msg_style' : 'user_msg_style']">
-                        <p :class="msg.sender === 'bot' ? 'bot_messege' : 'user_messege'">
-                            {{ msg.text }}
-                        </p>
-                    </div>
-                    <div v-if="isBotTyping" class="bot_msg_style loader-container">
-                        <div class="spinner"></div>
-                    </div>
-                </div>
-                <div class="chat_quick_replaies">
-                    <button @click="sendMessegeForBot('Как зарегистрироваться?')" class="replay_btn">Как зарегистрироваться?</button>
-                    <button @click="sendMessegeForBot('Как стать продавцом?')" class="replay_btn">Как стать продавцом?</button>
-                    <button @click="sendMessegeForBot('Почему мой заказ задерживается?')" class="replay_btn">Почему мой заказ задерживается?</button>
-                    <button @click="sendMessegeForBot('Не отправляется заказ')" class="replay_btn">Не отправляется заказ</button>
-                    <button @click="sendMessegeForBot('Позвать оператора')" class="replay_btn alert">Позвать оператора</button>
+</script>
+
+<template>
+    <div v-if="userDate" class="bento_wrapper">
+        <section class="hero_banner">
+            <div class="hero_left">
+                <img v-if="isVendor && editLogoUrl" :src="editLogoUrl" alt="" class="hero_logo" />
+                <div v-else class="hero_avatar">{{ (userDate.userName || 'U').charAt(0).toUpperCase() }}</div>
+                <div>
+                    <h1>{{ userDate.userName }}</h1>
+                    <p v-if="isVendor">
+                        {{ editShopName || 'Магазин продавца' }}
+                        <span v-if="editBrandName"> · {{ editBrandName }}</span>
+                        <span class="rating_chip">★ {{ Number(vendorRating).toFixed(1) }}</span>
+                    </p>
+                    <p v-else>Личный кабинет покупателя</p>
                 </div>
             </div>
-                
-        </div>
-        <div class="edit_profile">
-            <form action="">
-                <h2>Изменение аккаунта</h2>
-                <input v-model="editName" type="text" placeholder="Изменить имя аккаунта">
-                <input v-model="editShopName" v-if="isVendor" type="text" placeholder="Изменить название магазина">
-                <input v-model="editShopDesc" v-if="isVendor" type="text" placeholder="Изменить описание магазина">
-                <input v-model="editBrandName" v-if="isVendor" type="text" placeholder="Изменить название бренда">
-                <button class="save_btn" @click.prevent="saveProfile">Сохранить изменения</button>
+            <div class="hero_actions">
+                <button class="glass_btn" @click="isEditing = !isEditing">
+                    {{ isEditing ? 'Закрыть настройки' : 'Редактировать профиль' }}
+                </button>
+                <button class="glass_btn dark" @click="handleLogout">Выйти</button>
+            </div>
+        </section>
+
+        <section v-if="isEditing" class="bento_edit_panel">
+            <h2>Редактирование профиля</h2>
+            <form class="bento_form" @submit.prevent="saveProfile">
+                <div class="inputs_grid">
+                    <label class="field">
+                        <span>Имя аккаунта</span>
+                        <input v-model="editName" type="text" placeholder="Имя аккаунта" required />
+                    </label>
+                    <label v-if="isVendor" class="field">
+                        <span>Название магазина</span>
+                        <input v-model="editShopName" type="text" placeholder="Название магазина" required />
+                    </label>
+                    <label v-if="isVendor" class="field">
+                        <span>Название бренда</span>
+                        <input v-model="editBrandName" type="text" placeholder="Название бренда" />
+                    </label>
+                    <label v-if="isVendor" class="field">
+                        <span>ИНН</span>
+                        <input v-model="editInn" type="text" placeholder="ИНН организации или ИП" required />
+                    </label>
+                    <label v-if="isVendor" class="field">
+                        <span>Юридический адрес</span>
+                        <input v-model="editLegalAddress" type="text" placeholder="Юридический адрес" required />
+                    </label>
+                    <label v-if="isVendor" class="field">
+                        <span>Ссылка на логотип</span>
+                        <input v-model="editLogoUrl" type="text" placeholder="https://..." />
+                    </label>
+                </div>
+                <label v-if="isVendor" class="field">
+                    <span>Описание магазина</span>
+                    <textarea v-model="editShopDesc" rows="3" placeholder="Описание магазина"></textarea>
+                </label>
+                <button type="submit" class="save_bento_btn">Сохранить изменения</button>
             </form>
+        </section>
+
+        <section class="bento_grid">
+            <RouterLink v-if="!isVendor" to="/vendor_b" class="bento_tile span_4 vendor_spotlight">
+                <div class="spotlight_left">
+                    <div class="spotlight_icon_wrap">
+                        <img src="/Продавец_ЧБ.png" alt="" />
+                    </div>
+                    <div>
+                        <span class="spotlight_badge">Партнёрская программа</span>
+                        <h3>Стать продавцом на маркетплейсе</h3>
+                        <p>Откройте свой магазин, добавляйте товары и отслеживайте статистику продаж</p>
+                    </div>
+                </div>
+                <span class="spotlight_cta">Открыть магазин →</span>
+            </RouterLink>
+
+            <RouterLink v-if="isVendor" to="/vendor_dash_board" class="bento_tile span_4 vendor_spotlight active_vendor">
+                <div class="spotlight_left">
+                    <div class="spotlight_icon_wrap">
+                        <img src="/СтатистикаПродавец_ЧБ.png" alt="" />
+                    </div>
+                    <div>
+                        <span class="spotlight_badge">Кабинет продавца</span>
+                        <h3>Панель управления и аналитика продаж</h3>
+                        <p>Товары, заказы покупателей, выручка и показатели магазина</p>
+                    </div>
+                </div>
+                <span class="spotlight_cta">В панель продавца →</span>
+            </RouterLink>
+
+            <RouterLink to="/delivery" class="bento_tile span_2 peach">
+                <img src="/Коробка_доставка.png" alt="" />
+                <div>
+                    <h3>Доставка и заказы</h3>
+                    <p>Отслеживание посылок и статус получения</p>
+                </div>
+            </RouterLink>
+
+            <RouterLink to="/reviews" class="bento_tile span_2 lavender">
+                <img src="/Покупки.png" alt="" />
+                <div>
+                    <h3>Покупки и отзывы</h3>
+                    <p>История заказов и оценки товаров</p>
+                </div>
+            </RouterLink>
+
+            <RouterLink to="/favorites" class="bento_tile">
+                <img src="/Избранное.png" alt="" />
+                <h3>Избранное</h3>
+            </RouterLink>
+
+            <RouterLink to="/messenger" class="bento_tile">
+                <img src="/Поддержка.png" alt="" />
+                <h3>Мессенджер</h3>
+            </RouterLink>
+
+            <a href="#" class="bento_tile span_2" @click.prevent>
+                <img src="/Работа.png" alt="" />
+                <div>
+                    <h3>Работа на складе и в ПВЗ</h3>
+                    <p>Вакансии в пунктах выдачи и логистике</p>
+                </div>
+            </a>
+        </section>
+
+        <div v-if="isVendor" class="bottom_zone">
+            <button class="stop_vendor_link" @click="stopVendor">Перестать быть продавцом</button>
         </div>
-        </div>
-       <button class="logout_btn" @click="handleLogout">Выйти</button>
-       
+
+        <SupportChat />
     </div>
 </template>
 
 <style scoped>
+.bento_wrapper {
+    max-width: 1020px;
+    margin: 24px auto;
+    padding: 0 18px 80px;
+    display: flex;
+    flex-direction: column;
+    gap: 22px;
+    font-family: system-ui, -apple-system, sans-serif;
+}
 
-.main_Accaunt
-{
+.hero_banner {
+    background: linear-gradient(120deg, #ff7e5f 0%, #feb47b 100%);
+    border-radius: 24px;
+    padding: 28px 32px;
+    color: #fff;
     display: flex;
-    flex-direction: column;
+    justify-content: space-between;
     align-items: center;
-    text-align: center;
-    gap: 50px;
-    padding: 20px;
-    background-color: #fdfbf9;
-    min-height: 70vh;
-    font-family: system-ui, -apple-system, sans-serif;  
+    gap: 20px;
+    flex-wrap: wrap;
 }
-.content_wrapper
-{
+
+.hero_left {
     display: flex;
-    flex-direction: row;
-    gap: 50px;
-    justify-content: center;
-    width: 100%;
-    max-width: 1000px;
+    align-items: center;
+    gap: 18px;
 }
-.profil_container
-{
-    display: flex;
-    flex-direction: column;
-    gap: 30px;
-    width: 400px;
+
+.hero_avatar,
+.hero_logo {
+    width: 68px;
+    height: 68px;
+    border-radius: 20px;
     flex-shrink: 0;
-    margin: 0 auto;
 }
-.profil_container img
-{
-    width: 70px;
-    margin-left: 10px;
-}
-.profil_links
-{
+
+.hero_avatar {
+    background: rgba(255, 255, 255, 0.25);
+    backdrop-filter: blur(6px);
+    font-size: 28px;
+    font-weight: 800;
     display: flex;
-    flex-direction: row;
     align-items: center;
-    gap: 0 20px;
-    text-align: center;
-    font-size: 18px;
-    border-radius: 30px;
-    background-color: rgba(254, 180, 123, 0.8);
+    justify-content: center;
 }
-.profil_links:hover
-{
-    background-color: #f0ebf4;
+
+.hero_logo {
+    object-fit: cover;
+    background: #fff;
+    padding: 4px;
+}
+
+.hero_left h1 {
+    margin: 0 0 6px;
+    font-size: 26px;
+}
+
+.hero_left p {
+    margin: 0;
+    opacity: 0.95;
+    font-size: 14px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex-wrap: wrap;
+}
+
+.rating_chip {
+    background: rgba(255, 255, 255, 0.25);
+    padding: 2px 10px;
+    border-radius: 12px;
+    font-weight: 700;
+    font-size: 13px;
+}
+
+.hero_actions {
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+}
+
+.glass_btn {
+    padding: 11px 18px;
+    border-radius: 14px;
+    border: 1px solid rgba(255, 255, 255, 0.45);
+    background: rgba(255, 255, 255, 0.2);
+    color: #fff;
+    font-weight: 600;
+    font-size: 14px;
+    cursor: pointer;
+    transition: background 0.2s;
+}
+
+.glass_btn:hover {
+    background: rgba(255, 255, 255, 0.35);
+}
+
+.glass_btn.dark {
+    background: rgba(0, 0, 0, 0.18);
+    border-color: transparent;
+}
+
+.bento_edit_panel {
+    background: #fff;
+    border: 1px solid #eee8f2;
+    border-radius: 22px;
+    padding: 26px;
+}
+
+.bento_edit_panel h2 {
+    margin: 0 0 18px;
+    font-size: 19px;
+    color: #1f2937;
+}
+
+.bento_form {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+}
+
+.inputs_grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+    gap: 14px;
+}
+
+.field {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+.field span {
+    font-size: 13px;
+    font-weight: 600;
+    color: #4b5563;
+}
+
+.bento_form input,
+.bento_form textarea {
+    padding: 12px 16px;
+    border-radius: 14px;
+    border: 1px solid #ddd6e4;
+    font-size: 15px;
+    font-family: inherit;
+    outline: none;
+    transition: border-color 0.2s;
+}
+
+.bento_form input:focus,
+.bento_form textarea:focus {
+    border-color: #ff7e5f;
+}
+
+.save_bento_btn {
+    align-self: flex-start;
+    padding: 13px 28px;
+    border-radius: 14px;
+    border: none;
+    background: linear-gradient(to right, #ff7e5f, #feb47b);
+    color: #fff;
+    font-size: 15px;
+    font-weight: 600;
     cursor: pointer;
 }
-.profil_links a
-{
+
+.bento_grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 18px;
+}
+
+.bento_tile {
+    background: #ffffff;
+    border: 1px solid #eee8f2;
+    border-radius: 24px;
+    padding: 24px;
     text-decoration: none;
-    color: #000000;
-    display: inline-block;
-    max-width: 100%;
-    word-break: break-word;
-}
-.accaunt_work
-{
-    text-align: center;
-}
-.edit_profile
-{
+    color: #1f2937;
     display: flex;
     flex-direction: column;
     align-items: center;
-    flex: 1;
-    padding: 40px;
-    background-color: #f0ebf4;
-    max-width: 300px;
-    border-radius: 20px;
+    text-align: center;
+    justify-content: center;
+    gap: 14px;
+    transition: transform 0.2s, box-shadow 0.2s;
+}
+
+.bento_tile:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 10px 24px rgba(0, 0, 0, 0.06);
+}
+
+.bento_tile img {
+    width: 64px;
+    height: 64px;
+    object-fit: contain;
+    flex-shrink: 0;
+}
+
+.bento_tile h3 {
+    margin: 0;
+    font-size: 17px;
+}
+
+.bento_tile p {
+    margin: 6px 0 0;
+    font-size: 13px;
+    color: #6b7280;
+}
+
+.bento_tile.span_2 {
+    grid-column: span 2;
+    flex-direction: row;
+    align-items: center;
+    text-align: left;
+    justify-content: flex-start;
     gap: 20px;
 }
 
-.edit_profile input
-{
-    margin-top: 20px;
-    width: 100%;
-    height: 56px;
-    border-radius: 40px;
-    border: 1px solid #f0edf0;
-    background: #fcfbfc;
-    padding: 0 20px;
-    box-sizing: border-box;
-    font-size: 16px;
-    outline: none;
-    transition: all 0.2s ease;
-    border-color: #000000;
+.bento_tile.span_2 img {
+    width: 72px;
+    height: 72px;
 }
-.edit_profile input:focus
-{
-    border-color: #fa5f39;
-    background-color: #ffff;
-    box-shadow: 0 0 0 4px rgba(255, 126, 95, 0.1);
+
+.bento_tile.span_4 {
+    grid-column: span 4;
 }
-.profile_content
-{
-    flex: 1;
-    background-color: #ffffff;
-    border: 1px solid #f2edf0;
+
+.vendor_spotlight {
+    flex-direction: row;
+    justify-content: space-between;
+    align-items: center;
+    text-align: left;
+    padding: 24px 28px;
+    background: linear-gradient(135deg, #fff6ee 0%, #ffebd9 100%);
+    border: 1px solid #ffd4b2;
+}
+
+.vendor_spotlight.active_vendor {
+    background: linear-gradient(135deg, #f4f0fa 0%, #fff4ec 100%);
+    border-color: #e3d6f5;
+}
+
+.spotlight_left {
+    display: flex;
+    align-items: center;
+    gap: 20px;
+}
+
+.spotlight_icon_wrap {
+    width: 76px;
+    height: 76px;
     border-radius: 20px;
-    padding: 40px;
-    min-height: 380px;
-    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.02);
-    box-sizing: border-box;
-}
-
-.profile_content h2
-{
-    margin-top: 0;
-    color: #222222;
-    font-size: 24px;
-}
-
-.profile_content p
-{
-    color: #666666;
-    line-height: 1.6;
-}
-.logout_btn
-{
-    width: 400px;
-    height: 50px;
-    border-radius: 40px;
-    border: none;
-    background: linear-gradient(to right, #ff7e5f, #feb47b);
-    color: #ffff;
-    font-size: 18px;
-    font-weight: 600;
-    cursor: pointer;
-    transition: opacity 0.2s;
-    box-shadow: 0 4px 10px rgba(255, 126, 95, 0.2);
-}
-
-.logout_btn:hover
-{
-    background-color: #ffebeb;
-    border-color: #ffcccc;
-}
-.save_btn
-{
-    margin-top: 20px;
-    width: 400px;
-    height: 50px;
-    border-radius: 40px;
-    border: none;
-    background: linear-gradient(to right, #ff7e5f, #feb47b);
-    color: #ffff;
-    font-size: 18px;
-    font-weight: 600;
-    cursor: pointer;
-    transition: opacity 0.2s;
-    box-shadow: 0 4px 10px rgba(255, 126, 95, 0.2);
-}
-.save_btn:hover
-{
-    background-color: #ffebeb;
-    border-color: #ffcccc;
-}
-.windowChat
-{
+    background: #ffffff;
     display: flex;
-    flex-direction: column;
-    padding: 20px;
-    box-sizing: border-box; 
-    position: fixed;
-    bottom: 20px;
-    right: 20px;
-    width: 350px;
-    height: 500px;
-    background-color: #ffffff;
-    border: 1px solid #ccc;
-    border-radius: 15px;
-    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
-    z-index: 1000;
-
-}
-.chat_head
-{
-    display: flex;
+    align-items: center;
     justify-content: center;
-    border-bottom: 1px solid #eee;
-    padding-bottom: 10px;
-    margin-bottom: 10px;
+    flex-shrink: 0;
+    box-shadow: 0 6px 16px rgba(255, 126, 95, 0.14);
 }
-.chat_head h3
-{
-    margin: 0;
-    font-size: 18px;
-    color: #333;
+
+.spotlight_icon_wrap img {
+    width: 56px;
+    height: 56px;
 }
-.close_bot
-{
-    background-color: none;
-    border: none;
-    font-size: 20px;
-    cursor: pointer;
-    color: #888;
-    margin-left: 18px;
+
+.spotlight_badge {
+    display: inline-block;
+    font-size: 12px;
+    font-weight: 700;
+    color: #ea580c;
+    background: rgba(255, 126, 95, 0.15);
+    padding: 3px 10px;
+    border-radius: 10px;
+    margin-bottom: 6px;
 }
-.close_bot:hover
-{
-    color: #333;
+
+.vendor_spotlight h3 {
+    font-size: 19px;
+    color: #111827;
 }
-.chat_messeges
-{
-    flex: 1;
-    overflow-y: auto;
-    display: flex;
-    flex-direction: column;
-    gap: 10px;
-    margin-bottom: 15px;
-}
-.bot_messeges
-{
-    padding: 10px 15px;
-    border-radius: 15px;
-    max-width: 85%;
+
+.spotlight_cta {
+    padding: 13px 22px;
+    border-radius: 16px;
+    background: linear-gradient(to right, #ff7e5f, #feb47b);
+    color: #ffffff;
+    font-weight: 700;
     font-size: 14px;
-    line-height: 1.4;
+    white-space: nowrap;
+    box-shadow: 0 6px 16px rgba(255, 126, 95, 0.25);
+    transition: transform 0.2s;
 }
-.bot_messege
-{
-    background-color: #f0ebf4;
-    align-self: flex-start;
-    border-bottom-left-radius: 5px;
-    color: #333;
+
+.vendor_spotlight:hover .spotlight_cta {
+    transform: translateX(3px);
 }
-.chat_quick_replaies
-{
-    display: flex;
-    flex-wrap: wrap;
-    gap: 8px;
+
+.bento_tile.peach {
+    background: #fff7f2;
+    border-color: #ffe2d1;
 }
-.replay_btn
-{
-    background-color: #fff;
-    border: 1px solid #feb47b;
-    color: #ff7e5f;
-    padding: 8px 12px;
-    border-radius: 20px;
-    font-size: 13px;
+
+.bento_tile.lavender {
+    background: #f5f0fa;
+    border-color: #e6dcf0;
+}
+
+.bottom_zone {
+    text-align: center;
+    margin-top: 8px;
+}
+
+.stop_vendor_link {
+    background: none;
+    border: none;
+    color: #9ca3af;
+    text-decoration: underline;
     cursor: pointer;
-    transition: all;
-}
-.replay_btn:hover
-{
-    background-color: #ff7e5f;
-    color: #fff;
-}
-.replay_btn.alert
-{
-    border-color: #ccc;
-    color: #666;
-}
-.replay_btn.alert:hover
-{
-    background-color: #666;
-    color: #fff;
-}
-.bot_msg_style
-{
-    align-self: flex-start;
-}
-.user_msg_style
-{
-    align-self: flex-end;
-}
-.user_messege
-{
-    background-color: #ff7e5f;
-    color: #fff;
-    padding: 10px 15px;
-    border-radius: 15px;
-    border-bottom-right-radius: 5px;
-    margin: 0;
-}
-.loader_container {
-    padding: 10px 15px;
-    align-self: flex-start;
+    font-size: 13px;
 }
 
-.spinner {
-    width: 24px;
-    height: 24px;
-    border: 3px solid #f0ebf4; /* Светлое базовое кольцо */
-    border-top: 3px solid #ff7e5f; /* Оранжевый акцент сверху */
-    border-radius: 50%; /* Делает квадрат круглым */
-    animation: spin 1s linear infinite; /* Запускает анимацию с именем spin */
+@media (max-width: 820px) {
+    .bento_grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+
+    .bento_tile.span_4 {
+        grid-column: span 2;
+    }
+
+    .vendor_spotlight {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 18px;
+    }
+
+    .spotlight_cta {
+        width: 100%;
+        text-align: center;
+        box-sizing: border-box;
+    }
+
+    .bento_tile img {
+        width: 58px;
+        height: 58px;
+    }
+
+    .bento_tile.span_2 img {
+        width: 64px;
+        height: 64px;
+    }
 }
 
-@keyframes spin {
-    0% { transform: rotate(0deg); }
-    100% { transform: rotate(360deg); }
+@media (max-width: 520px) {
+    .hero_banner {
+        padding: 20px;
+    }
+
+    .hero_actions,
+    .glass_btn,
+    .save_bento_btn {
+        width: 100%;
+    }
+
+    .bento_grid {
+        grid-template-columns: 1fr;
+    }
+
+    .bento_tile.span_2,
+    .bento_tile.span_4 {
+        grid-column: span 1;
+    }
+
+    .bento_tile {
+        flex-direction: row;
+        text-align: left;
+        justify-content: flex-start;
+        padding: 18px 20px;
+    }
+
+    .vendor_spotlight {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+
+    .spotlight_left {
+        gap: 14px;
+    }
+
+    .spotlight_icon_wrap {
+        width: 62px;
+        height: 62px;
+    }
+
+    .spotlight_icon_wrap img {
+        width: 46px;
+        height: 46px;
+    }
+
+    .bento_tile img,
+    .bento_tile.span_2 img {
+        width: 54px;
+        height: 54px;
+    }
 }
 </style>

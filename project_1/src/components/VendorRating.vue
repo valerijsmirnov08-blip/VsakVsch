@@ -1,5 +1,6 @@
 <script setup>
 import { ref, computed, onMounted, watch } from 'vue';
+import { API_URL } from '@/composables/apiConfig.js';
 import { Bar, Radar } from 'vue-chartjs';
 import {
     Chart as ChartJS,
@@ -34,7 +35,7 @@ const props = defineProps(['vendorId']);
 const fetchRating = async() =>
 {
     const id = props.vendorId || localStorage.getItem('vendorId') || 1;
-    const response = await fetch(`http://localhost:8080/api/vendor-rating/${id}?period=${encodeURIComponent(activePeriod.value)}`);
+    const response = await fetch(`${API_URL}/vendor-rating/${id}?period=${encodeURIComponent(activePeriod.value)}`);
     if(response.ok)
     {
         currentStats.value = await response.json();

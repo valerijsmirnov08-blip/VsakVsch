@@ -4,6 +4,7 @@ import router from '@/router';
 import { computed } from 'vue';
 import { ElRate } from 'element-plus';
 import { tr } from 'element-plus/es/locales.mjs';
+import { API_URL } from '@/composables/apiConfig.js';
 
 const order = ref([]);
 const product = ref([]);
@@ -42,7 +43,7 @@ const ErrorMessage = ref('');
     });
     const LoadCategories = async () => {
         try {
-            const response = await fetch('http://localhost:8080/api/categories/complaints');
+            const response = await fetch(`${API_URL}/categories/complaints`);
             if (response.ok) {
                 allCategories.value = await response.json();
             }
@@ -57,7 +58,7 @@ const ErrorMessage = ref('');
         const userId = user.id;
 
         try {
-            const response = await fetch(`http://localhost:8080/api/orders/user/${userId}/items`);
+            const response = await fetch(`${API_URL}/orders/user/${userId}/items`);
             if (response.ok) {
                 order.value = await response.json();
                 console.log("Заказы пользователя с бэкенда:", order.value);
@@ -119,7 +120,7 @@ const SaveReview = async() =>
 
     try
     {
-        const response = await fetch('http://localhost:8080/api/reviews',
+        const response = await fetch(`${API_URL}/reviews`,
             {
                 method: 'POST',
                 headers: {'Content-Type' : 'application/json'},
@@ -128,7 +129,7 @@ const SaveReview = async() =>
         if (response.ok)
         {
             const itemId = selectedOrderItem.value.id;
-            await fetch(`http://localhost:8080/api/orders/items/${itemId}/reviewed`,
+            await fetch(`${API_URL}/orders/items/${itemId}/reviewed`,
             {
                 method: 'PUT'
             });

@@ -1,5 +1,6 @@
 <script setup>
 import {computed, onMounted, ref} from 'vue';
+import { API_URL } from '@/composables/apiConfig.js';
 
     const filter = ref('Все');
     const product = ref([]);
@@ -16,7 +17,7 @@ import {computed, onMounted, ref} from 'vue';
         try
         {
             const newStatus = item.statusReview === 'Не просмотрено';
-            const response = await fetch(`http://localhost:8080/api/reviews/update-status`,
+            const response = await fetch(`${API_URL}/reviews/update-status`,
             {
                 method: 'PUT',
                 headers: {'Content-Type' : 'application/json'},
@@ -56,7 +57,7 @@ import {computed, onMounted, ref} from 'vue';
         const user = JSON.parse(session);
         const vendorId = user.id;
         
-        const response = await fetch(`http://localhost:8080/api/reviews/vendor/${vendorId}`);
+        const response = await fetch(`${API_URL}/reviews/vendor/${vendorId}`);
         if (response.ok)
         {
             const rawData = await response.json();

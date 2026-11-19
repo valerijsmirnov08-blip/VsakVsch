@@ -106,4 +106,9 @@ public class MessengerService
             }
         }
     }
+    public void markMessagesAsRead(Long conversationId, Long readerId)
+    {
+        List<ChatMessage> messages = chatMessageRepository.findByConversationIdOrderByCreatedAtAsc(conversationId);
+        markIncomingAsRead(messages, readerId);
+    }
 }
