@@ -42,6 +42,13 @@ public class VendorProfile
     @Column (name = "logo_url")
     private String logoUrl;
 
+    public VendorProfile(Users vendor, String shopName, String inn, String legalAddress) {
+        this.vendor = vendor;
+        this.shopName = shopName;
+        this.inn = inn;
+        this.legalAddress = legalAddress;
+    }
+
     public VendorProfile () {}
 
     public Long getId() {return id;}

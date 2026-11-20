@@ -136,7 +136,7 @@ const updateStatus = async(itemId, newStatus) =>
         <button :class="{ active: currentTab === 'Отправлен' }" @click="currentTab = 'Отправлен'">Отправленные</button>
         <button :class="{ active: currentTab === 'Доставлен' }" @click="currentTab = 'Доставлен'">Доставленные</button>
         <button :class="{ active: currentTab === 'Все' }" @click="currentTab = 'Все'">Все</button>
-        <button :class="{ active: currentTab === 'Отменен' }" @click="currentTab = 'Отменен'">Отмененые</button>
+        <button :class="{ active: currentTab === 'Отказано' }" @click="currentTab = 'Отказано'">Отмененые</button>
     </div>
     
     <div v-if="loading" class="loading">Загрузка товаров из базы данных...</div>
