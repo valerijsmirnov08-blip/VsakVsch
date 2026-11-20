@@ -54,10 +54,12 @@ const changeCity = () => {
     </header>
 </template>
 <style scoped>
-.search_item {
-    flex-grow: 1;
-    margin: 0 40px;
+header nav ul {
+    display: flex; flex-wrap: wrap;
+    align-items: center; justify-content: space-between;
+    gap: clamp(8px, 1.2vw, 16px); padding: 0;
 }
+.search_item { flex: 1 1 260px; min-width: 0; margin: 0; }
 .left_column {
     display: flex;
     flex-direction: column;
@@ -66,12 +68,12 @@ const changeCity = () => {
     white-space: nowrap; 
     margin-bottom: 0;
 }
-
+ul > .accaunt-link { padding-top: clamp(26px, 2.4vw, 36px); }
 .city_btn {
     background: transparent;
     border: none;
     color: #ffffff;
-    font-size: 18px !important;
+    font-size: clamp(13px, 1.3vw, 18px) !important;
     cursor: pointer;
     padding: 0;
     display: flex;
@@ -82,18 +84,18 @@ const changeCity = () => {
 }
 
 .city_btn img {
-    width: 28px !important;
+    width: clamp(18px, 1.8vw, 26px) !important;
 }
 
 .name_market {
-    font-size: 46px !important;
+    font-size: clamp(22px, 3vw, 42px) !important;
     font-weight: 800;
     margin: 0;
 }
 
 .seller_title {
     margin-top: 2px;
-    font-size: 20px !important;
+    font-size: clamp(14px, 1.5vw, 20px) !important;
     color: #333333; 
     font-weight: 600;
 }
@@ -104,7 +106,7 @@ const changeCity = () => {
 }
 .messedge li
 {
-    font-size: 25px;
+    font-size: inherit;
 }
 
 .accaunt-link {
@@ -112,7 +114,13 @@ const changeCity = () => {
     flex-direction: column;
     align-items: center;
     gap: 8px;
-    font-size: 30px !important;
+    font-size: clamp(14px, 1.6vw, 24px) !important; gap: 4px;
     font-weight: 500;
+}
+@media (max-width: 900px) { .search_item { order: 10; flex: 1 0 100%; } }
+@media (max-width: 600px) {
+    .left_column { flex: 1 0 100%; }
+    ul > .accaunt-link { padding-top: 26px; flex: 1; }
+    .messedge, .accaunt, .basket { flex: 1; }
 }
 </style>

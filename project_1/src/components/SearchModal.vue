@@ -146,20 +146,8 @@
 }
 
 .dropdown-panel {
-    position: absolute;
-    top: 50px;
-    left: 0;
-    width: 700px;
-    min-height: 350px;
-    background-color: #ffffff;
-    border-radius: 15px;
-    box-shadow: 0 10px 30px rgba(0,0,0,0.15);
-    display: flex;
-    z-index: 1001;
-    overflow: hidden;
-    color: #333;
-    width: 850px;
-    min-height: 400px;
+    width: min(850px, 94vw);
+    max-width: 100%;
     left: 50%;
     transform: translateX(-50%);
 }
@@ -293,5 +281,9 @@
     display: inline-block; margin-left: 10px; padding: 4px 12px;
     background: #ff7e5f; color: #fff; border-radius: 20px;
     font-size: 13px; font-weight: 600; cursor: pointer;
+}
+@media (max-width: 768px) {
+    .dropdown-panel { flex-direction: column; max-height: 75vh; overflow-y: auto; }
+    .dropdown-sidebar, .dropdown-content { width: 100%; box-sizing: border-box; }
 }
 </style>

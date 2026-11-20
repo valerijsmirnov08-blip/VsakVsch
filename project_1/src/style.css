@@ -22,7 +22,7 @@ header
     gap: 20px;
     background: linear-gradient(to right  , #ff7e5f, #feb47b);
     width: 100%;
-    padding: 15px 30px;
+    padding: 12px clamp(12px, 2.5vw, 30px);
     box-sizing: border-box;
 }
 header nav
@@ -52,13 +52,15 @@ header ul a
 }
 .accaunt_img
 {
-    width: 45px;
-    height: 45px;
+    width: clamp(22px, 2.2vw, 32px) !important;
+    height: clamp(22px, 2.2vw, 32px) !important;
+    object-fit: contain;
 }
 .basket_img
 {
-    width: 45px;
-    height: 45px;
+   width: clamp(22px, 2.2vw, 32px) !important;
+    height: clamp(22px, 2.2vw, 32px) !important;
+    object-fit: contain;
 }
 
 .name_market
