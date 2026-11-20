@@ -73,7 +73,9 @@ public class FinancesService
         BigDecimal netAmount = grossAmount.subtract(commission);
 
         VendorProfile vendor = vendorProfileRepository.findByVendorId(item.getVendorId())
-        .orElseThrow(() -> new RuntimeException("Продавец не найден"));
+            .orElseGet(() -> vendorProfileRepository.save(
+                new VendorProfile(item.getProduct().getVendor(), "Магазин #" + item.getVendorId(), "0000000000", "Не указан")
+            ));
 
         Finances sale = new Finances();
         sale.setVendor(vendor);
